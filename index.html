@@ -3,54 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Survival RPG V4 - Base Building</title>
+    <title>Survival V6 - Armor & Solid</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
+        /* Reset total pour plein écran */
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; touch-action: none; user-select: none; -webkit-user-select: none; font-family: 'Segoe UI', sans-serif; }
         
         #rotate-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; text-align: center; }
-        #gameCanvas { display: block; }
+        
+        #gameCanvas { display: block; width: 100%; height: 100%; }
 
-        /* UI Overlay */
+        /* UI Layer */
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         
-        /* HUD Haut */
-        .hud-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; display: flex; gap: 15px; pointer-events: auto; border: 2px solid rgba(255,255,255,0.3); flex-wrap: wrap; }
+        /* HUD Opaque */
+        .hud-panel { position: absolute; top: 10px; left: 10px; background: #222; color: white; padding: 8px 12px; border-radius: 8px; font-size: 14px; display: flex; gap: 10px; pointer-events: auto; border: 2px solid #777; box-shadow: 0 4px 5px rgba(0,0,0,0.8); font-weight: bold; flex-wrap: wrap; }
         
         /* Bouton Menu */
-        #menu-btn { position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; background: #f39c12; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; pointer-events: auto; border: 3px solid white; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
+        #menu-btn { position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; background: #f39c12; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; pointer-events: auto; border: 2px solid white; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
         #menu-btn:active { transform: translateY(4px); box-shadow: none; }
 
-        /* Contrôles Bas */
-        .controls-zone { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; px: 20px; box-sizing: border-box; padding: 0 40px; pointer-events: auto; }
+        /* Contrôles */
+        .controls-zone { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 40px; box-sizing: border-box; pointer-events: auto; }
 
-        #joystick-zone { width: 130px; height: 130px; background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
-        #joystick-stick { width: 60px; height: 60px; background: rgba(255,255,255,0.8); border-radius: 50%; position: absolute; top: 35px; left: 35px; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #joystick-zone { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; border: 3px solid rgba(255,255,255,0.5); backdrop-filter: blur(2px); }
+        #joystick-stick { width: 60px; height: 60px; background: #fff; border-radius: 50%; position: absolute; top: 30px; left: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-        #action-btn { width: 100px; height: 100px; background: #e74c3c; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 45px; box-shadow: 0 6px 0 #c0392b; transition: background 0.2s; }
+        #action-btn { width: 100px; height: 100px; background: #e74c3c; border-radius: 50%; border: 5px solid white; display: flex; align-items: center; justify-content: center; font-size: 45px; box-shadow: 0 6px 0 #c0392b; transition: background 0.1s; }
         #action-btn:active { transform: translateY(6px); box-shadow: none; }
         
-        /* Menu Crafting */
-        #craft-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 85%; max-width: 600px; border-radius: 15px; padding: 20px; border: 4px solid #bdc3c7; display: none; color: white; z-index: 2000; pointer-events: auto; box-shadow: 0 0 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; }
-        .craft-item { background: rgba(0,0,0,0.3); padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .craft-btn { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer; width: 110px; }
-        .craft-btn:disabled { background: #7f8c8d; opacity: 0.5; cursor: not-allowed; }
-        .close-btn { background: #c0392b; width: 100%; padding: 15px; border: none; color: white; font-size: 18px; font-weight: bold; border-radius: 5px; margin-top: 15px; }
+        /* Menu Craft Solide */
+        #craft-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 90%; max-width: 600px; border-radius: 15px; padding: 15px; border: 4px solid #fff; display: none; color: white; z-index: 2000; pointer-events: auto; box-shadow: 0 0 0 1000px rgba(0,0,0,0.8); max-height: 95vh; overflow-y: auto; }
         
-        /* Indicateur Maison */
-        .house-indicator { color: #f1c40f; font-size: 12px; display: block; margin-top: 5px; }
-
-        .floater { position: absolute; color: white; font-weight: 900; font-size: 24px; text-shadow: 2px 2px 0 #000; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 1000; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.2); } }
+        .craft-item { background: #34495e; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #465c71; }
+        .craft-btn { background: #27ae60; border: none; color: white; padding: 10px; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer; width: 100px; border-bottom: 3px solid #196f3d; }
+        .craft-btn:active { transform: translateY(2px); border-bottom: 1px solid #196f3d; }
+        .craft-btn:disabled { background: #7f8c8d; opacity: 0.5; cursor: not-allowed; border-bottom: 3px solid #555; }
+        
+        .close-btn { background: #c0392b; width: 100%; padding: 12px; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 8px; margin-top: 10px; border-bottom: 4px solid #922b21; }
+        
+        /* Texte flottant */
+        .floater { position: absolute; color: white; font-weight: 900; font-size: 22px; text-shadow: 2px 2px 0 #000; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 5000; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
     </style>
 </head>
 <body>
 
-    <div id="rotate-screen"><h1>📱 Tourne ton écran</h1><p>Mode Paysage Requis</p></div>
+    <div id="rotate-screen">
+        <h1>📱 PAYSAGE REQUIS</h1>
+        <p>Touche l'écran pour lancer</p>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
         <div class="hud-panel">
-            <span style="color:#e74c3c">❤️ <b id="hp-count">100</b></span>
+            <span style="color:#e74c3c">❤️ <b id="hp-count">100</b>/<span id="max-hp-count">100</span></span>
+            <span style="color:#3498db">🛡️ <b id="armor-lvl">0</b></span>
             <span style="color:#f39c12">🪵 <b id="wood-count">0</b></span>
             <span style="color:#95a5a6">🪨 <b id="stone-count">0</b></span>
             <span style="color:#e91e63">💎 <b id="ruby-count">0</b></span>
@@ -63,47 +70,54 @@
     </div>
 
     <div id="craft-menu">
-        <h2 style="margin:0 0 20px 0; text-align:center; color:#f1c40f;">CONSTRUCTION & OUTILS</h2>
+        <h3 style="margin:0 0 15px 0; text-align:center; color:#f1c40f;">FORGE & CONSTRUCTION</h3>
         
-        <div class="craft-item" style="background: rgba(243, 156, 18, 0.2); border: 1px solid #f39c12;">
+        <div class="craft-item" style="border-color:#f39c12;">
             <div>
-                <strong style="color:#f1c40f; font-size:18px;">🏠 MAISON (Niv <span id="house-lvl">0</span>)</strong><br>
-                <small id="house-desc">Construis un abri pour te soigner.</small><br>
-                <small style="color:#fff" id="house-cost-text">Coût: 50 Bois / 20 Pierres</small>
+                <strong style="color:#f1c40f">🏠 MAISON (Niv <span id="house-lvl">0</span>)</strong><br>
+                <small style="color:#ddd">Permet de se soigner & crafter l'armure.</small><br>
+                <small style="color:#fff" id="house-cost">50 Bois / 20 Pierres</small>
             </div>
-            <button class="craft-btn" id="btn-house" onclick="craft('house')">CONSTRUIRE</button>
+            <button class="craft-btn" id="btn-house" onclick="craft('house')">BÂTIR</button>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 15px 0;">
+        <div class="craft-item" style="background:#2c3e50; border-color:#3498db;">
+            <div>
+                <strong style="color:#3498db">🛡️ ARMURE (Niv <span id="armor-menu-lvl">0</span>)</strong><br>
+                <small style="color:#ddd">Augmente la Vie Max.</small><br>
+                <small style="color:#f39c12" id="armor-status">⚠️ Nécessite d'être à la Maison</small><br>
+                <small style="color:#fff" id="armor-cost">50 Pierre / 50 Bois</small>
+            </div>
+            <button class="craft-btn" id="btn-armor" onclick="craft('armor')">FORGER</button>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
 
         <div class="craft-item">
             <div>
-                <strong style="color:#3498db">🪓 Hache (Niv <span id="axe-lvl">1</span>)</strong><br>
-                <small>Coupe le bois plus vite</small><br>
-                <small style="color:#aaa">Prix: <span id="axe-cost">20</span> Bois</small>
+                <strong>🪓 Hache (Niv <span id="axe-lvl">1</span>)</strong><br>
+                <small style="color:#aaa">Coût: <span id="axe-cost">20</span> Bois</small>
             </div>
-            <button class="craft-btn" id="btn-axe" onclick="craft('axe')">UPGRADE</button>
+            <button class="craft-btn" id="btn-axe" onclick="craft('axe')">UP</button>
         </div>
 
         <div class="craft-item">
             <div>
-                <strong style="color:#95a5a6">⛏️ Pioche (Niv <span id="pick-lvl">1</span>)</strong><br>
-                <small>Casse la pierre plus vite</small><br>
-                <small style="color:#aaa">Prix: <span id="pick-cost">20 B / 10 P</span></small>
+                <strong>⛏️ Pioche (Niv <span id="pick-lvl">1</span>)</strong><br>
+                <small style="color:#aaa">Coût: <span id="pick-cost">20 B / 10 P</span></small>
             </div>
-            <button class="craft-btn" id="btn-pick" onclick="craft('pick')">UPGRADE</button>
+            <button class="craft-btn" id="btn-pick" onclick="craft('pick')">UP</button>
         </div>
 
         <div class="craft-item">
             <div>
-                <strong style="color:#e74c3c">⚔️ Épée (Niv <span id="sword-lvl">1</span>)</strong><br>
-                <small>Dégâts aux monstres</small><br>
-                <small style="color:#aaa">Prix: <span id="sword-cost">50 B / 5 R</span></small>
+                <strong>⚔️ Épée (Niv <span id="sword-lvl">1</span>)</strong><br>
+                <small style="color:#aaa">Coût: <span id="sword-cost">50 B / 5 R</span></small>
             </div>
-            <button class="craft-btn" id="btn-sword" onclick="craft('sword')">UPGRADE</button>
+            <button class="craft-btn" id="btn-sword" onclick="craft('sword')">UP</button>
         </div>
 
-        <button class="close-btn" onclick="toggleMenu()">RETOUR AU JEU</button>
+        <button class="close-btn" onclick="toggleMenu()">RETOUR</button>
     </div>
 
 <script>
@@ -111,23 +125,29 @@
     const ctx = canvas.getContext('2d');
     const rotateScreen = document.getElementById('rotate-screen');
     
+    // --- PLEIN ÉCRAN FORCE ---
+    function enableFullscreen() {
+        if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        else if(document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+    }
+    document.body.addEventListener('touchstart', () => enableFullscreen(), {once:true});
+    document.body.addEventListener('click', () => enableFullscreen(), {once:true});
+
+    // --- JEU ---
     const MAP_SIZE = 3000; 
     const LAVA_START = 2200;
     
-    const player = { x: 500, y: 500, speed: 5, size: 25, moving: false, angle: 0, hp: 100, maxHp: 100, iframes: 0 };
-    const inventory = { wood: 0, stone: 0, ruby: 0, axe: 1, pickaxe: 1, sword: 1 }; 
+    const player = { x: 500, y: 500, speed: 6, size: 25, moving: false, angle: 0, hp: 100, maxHp: 100, iframes: 0 };
+    const inventory = { wood: 0, stone: 0, ruby: 0, axe: 1, pickaxe: 1, sword: 1, armor: 0 }; 
     const house = { active: false, x: 0, y: 0, level: 0, cooldown: 0 };
 
+    // Coûts et Stats
     const costs = { 
-        axe: 20, 
-        pick: {w:20, s:10}, 
-        sword: {w:50, r:5},
-        house: [ // Cout par niveau (0->1, 1->2, 2->3)
-            {w: 50, s: 20, r: 0},   // Tente
-            {w: 150, s: 80, r: 0},  // Maison
-            {w: 300, s: 150, r: 10} // Chateau
-        ]
+        axe: 20, pick: {w:20, s:10}, sword: {w:50, r:5},
+        house: [ {w: 50, s: 20, r: 0}, {w: 150, s: 80, r: 0}, {w: 300, s: 150, r: 10} ],
+        armor: [ {w: 50, s: 50, r: 0}, {w: 0, s: 150, r: 5}, {w: 0, s: 300, r: 20} ] // 3 Niveaux d'armure
     };
+    const armorStats = [0, 50, 150, 400]; // PV bonus par niveau (0, +50, +150, +400)
 
     let objects = [];
     let particles = [];
@@ -145,21 +165,18 @@
 
     function generateWorld() {
         objects = [];
+        // Zone Verte
         for(let i=0; i<150; i++) spawnObj('tree', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
         for(let i=0; i<80; i++) spawnObj('rock', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
         for(let i=0; i<300; i++) spawnObj('grass', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
-
+        // Zone Lave
         const castleX = LAVA_START + (MAP_SIZE - LAVA_START)/2;
         const castleY = MAP_SIZE/2;
-        
-        // Enceinte du boss
         for(let x=castleX-250; x<=castleX+250; x+=40) { spawnObj('wall', x, castleY-250); spawnObj('wall', x, castleY+250); }
         for(let y=castleY-250; y<=castleY+250; y+=40) { spawnObj('wall', castleX-250, y); spawnObj('wall', castleX+250, y); }
-
         for(let i=0; i<60; i++) spawnObj('dead_tree', LAVA_START + Math.random()*(MAP_SIZE-LAVA_START), Math.random()*MAP_SIZE);
         for(let i=0; i<40; i++) spawnObj('ruby', LAVA_START + Math.random()*(MAP_SIZE-LAVA_START), Math.random()*MAP_SIZE);
-        
-        for(let i=0; i<25; i++) spawnObj('orc', castleX + (Math.random()-0.5)*600, castleY + (Math.random()-0.5)*600);
+        for(let i=0; i<30; i++) spawnObj('orc', castleX + (Math.random()-0.5)*700, castleY + (Math.random()-0.5)*700);
     }
 
     function spawnObj(type, x, y) {
@@ -170,29 +187,31 @@
         if(type === 'ruby') { obj.emoji = '💎'; obj.hp = 40; obj.maxHp = 40; obj.size = 30; }
         if(type === 'grass') { obj.emoji = ['🌿','🌱'][Math.floor(Math.random()*2)]; obj.size = 20; }
         if(type === 'wall') { obj.emoji = '🧱'; obj.hp = 9999; obj.maxHp = 9999; obj.solid = true; }
-        if(type === 'orc') { obj.emoji = '👹'; obj.hp = 50; obj.maxHp = 50; obj.speed = 2.2; obj.hostile = true; }
+        if(type === 'orc') { obj.emoji = '👹'; obj.hp = 60; obj.maxHp = 60; obj.speed = 2.8; obj.hostile = true; }
         objects.push(obj);
     }
 
     function loop() {
-        // --- LOGIQUE MAISON (SOIN) ---
+        // LOGIQUE DE JEU
+        let atHome = false;
         if(house.active) {
             const dHouse = Math.hypot(player.x - house.x, player.y - house.y);
-            // Si le joueur est proche de sa maison (dedans)
-            if(dHouse < 60) {
+            if(dHouse < 75) {
+                atHome = true;
                 house.cooldown++;
-                // Vitesse de soin selon niveau
-                let speed = 60 - (house.level * 10); // Niv 1 = lent, Niv 3 = rapide
+                let speed = 40 - (house.level * 10); 
                 if(house.cooldown > speed && player.hp < player.maxHp) {
                     player.hp += 5;
+                    if(player.hp > player.maxHp) player.hp = player.maxHp;
                     house.cooldown = 0;
                     showFloat("💚", player.x, player.y - 30, '#2ecc71');
                     updateUI();
                 }
             }
         }
+        window.isAtHome = atHome; // Pour le menu
 
-        // --- PHYSIQUE ---
+        // Physique Joueur
         if(joyData.active) {
             let nx = player.x + Math.cos(player.angle) * player.speed;
             let ny = player.y + Math.sin(player.angle) * player.speed;
@@ -210,88 +229,83 @@
         objects.forEach(o => {
             if(o.hostile && o.hp > 0) {
                 const dist = Math.hypot(player.x - o.x, player.y - o.y);
-                // Si joueur caché dans maison (niv 2+), les orcs ne voient pas (optionnel, ici ils attaquent quand même)
-                if(dist < 450 && dist > 30) {
+                if(dist < 500 && dist > 30) {
                     o.x += (player.x - o.x) / dist * o.speed;
                     o.y += (player.y - o.y) / dist * o.speed;
                 }
                 if(dist < 40 && player.iframes <= 0) {
-                    player.hp -= 10;
+                    // Calcul dégats réduits par armure ? Non, l'armure donne des HP en plus ici.
+                    player.hp -= 15;
                     player.iframes = 30;
-                    showFloat("💔 -10", player.x, player.y, '#e74c3c');
+                    showFloat("💔", player.x, player.y, '#e74c3c');
                     screenShake();
                     updateUI();
                 }
             }
         });
 
-        if(player.hp <= 0) { alert("💀 MORT !"); location.reload(); }
+        if(player.hp <= 0) { alert("💀 MORT !\nRecharge la page pour recommencer."); location.reload(); }
 
-        // --- RENDU ---
+        // --- RENDU GRAPHIQUE OPAQUE ---
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         camera.x = player.x - canvas.width/2;
         camera.y = player.y - canvas.height/2;
 
-        ctx.fillStyle = '#2ecc71';
+        // Fond
+        ctx.fillStyle = '#27ae60'; // Vert plus joli
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.save();
         ctx.translate(-camera.x, -camera.y);
 
         // Sol Lave
-        ctx.fillStyle = '#3c1212';
+        ctx.fillStyle = '#4a1010';
         ctx.fillRect(LAVA_START, 0, MAP_SIZE - LAVA_START, MAP_SIZE);
 
-        // Grille
-        ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+        // Grille (discrète)
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
         for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
         ctx.stroke();
 
-        // DESSINER LA MAISON (Sous le joueur)
+        // MAISON
         if(house.active) {
-            let houseEmoji = "⛺"; // Niv 1
-            let houseSize = 80;
-            if(house.level === 2) { houseEmoji = "🏠"; houseSize = 100; }
-            if(house.level === 3) { houseEmoji = "🏰"; houseSize = 140; }
-
-            // Zone de confort
-            ctx.fillStyle = 'rgba(46, 204, 113, 0.3)';
+            let houseEmoji = ["⛺", "🏠", "🏰"][house.level-1] || "⛺";
+            let size = 90 + (house.level*20);
+            
+            // Cercle zone safe
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.4)';
             ctx.beginPath();
-            ctx.arc(house.x, house.y, 70, 0, Math.PI*2);
+            ctx.arc(house.x, house.y, 75, 0, Math.PI*2);
             ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth=3; ctx.stroke();
 
-            ctx.font = houseSize + "px Segoe UI Emoji";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(houseEmoji, house.x, house.y);
+            drawEmoji(houseEmoji, house.x, house.y, size);
         }
 
-        // OBJETS
+        // OBJETS (Triés)
         objects.sort((a,b) => a.y - b.y);
         objects.forEach(o => {
             if(Math.abs(o.x - player.x) < canvas.width && Math.abs(o.y - player.y) < canvas.height) {
                 // Ombre
                 ctx.fillStyle = 'rgba(0,0,0,0.3)';
                 ctx.beginPath();
-                ctx.ellipse(o.x, o.y+10, o.size/1.5, o.size/3, 0, 0, Math.PI*2);
+                ctx.ellipse(o.x, o.y+15, o.size/1.4, o.size/3, 0, 0, Math.PI*2);
                 ctx.fill();
 
                 let shakeX = (o.hitTimer > 0) ? (Math.random()-0.5)*10 : 0;
                 if(o.hitTimer > 0) o.hitTimer--;
 
-                ctx.font = o.size + "px Segoe UI Emoji";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(o.emoji, o.x + shakeX, o.y);
+                drawEmoji(o.emoji, o.x + shakeX, o.y, o.size);
 
+                // Barre de vie
                 if(o.hp < o.maxHp && o.type !== 'grass') {
                     const pct = o.hp / o.maxHp;
-                    ctx.fillStyle = 'black'; ctx.fillRect(o.x - 20, o.y - 30, 40, 6);
-                    ctx.fillStyle = o.hostile ? '#e74c3c' : '#f1c40f'; ctx.fillRect(o.x - 20, o.y - 30, 40 * pct, 6);
+                    ctx.fillStyle = '#000'; ctx.fillRect(o.x - 20, o.y - 40, 40, 6);
+                    ctx.fillStyle = o.hostile ? '#e74c3c' : '#f1c40f'; ctx.fillRect(o.x - 20, o.y - 40, 40 * pct, 6);
                 }
             }
         });
@@ -299,25 +313,33 @@
         // JOUEUR
         ctx.translate(player.x, player.y);
         if(player.iframes % 4 < 2) {
-            ctx.font = "40px Segoe UI Emoji";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("🤠", 0, 0);
-            ctx.font = "20px Segoe UI Emoji";
-            // Petit icone si on soigne
-            if(house.active && Math.hypot(player.x - house.x, player.y - house.y) < 60) {
-                ctx.fillText("➕", 0, -35);
+            // Petit bouclier qui tourne si armure
+            if(inventory.armor > 0) {
+                ctx.save();
+                ctx.rotate(Date.now()/500);
+                ctx.font = "20px Serif"; ctx.fillText("🛡️", 35, 0);
+                ctx.restore();
+            }
+            
+            drawEmoji("🤠", 0, 0, 45);
+            
+            // Icone soin
+            if(atHome && player.hp < player.maxHp) {
+                ctx.font = "24px Arial"; ctx.fillText("➕", 0, -45);
             }
         }
         ctx.restore();
 
         updateActionButton();
 
+        // Particules textuelles
         particles.forEach((p, i) => {
             p.y -= 1.5; p.life--;
             ctx.globalAlpha = p.life/30;
             ctx.fillStyle = p.color;
-            ctx.font = "bold 20px Arial";
+            ctx.font = "900 20px Arial";
+            ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
+            ctx.strokeText(p.text, p.x - camera.x, p.y - camera.y);
             ctx.fillText(p.text, p.x - camera.x, p.y - camera.y);
             if(p.life<=0) particles.splice(i, 1);
         });
@@ -325,6 +347,22 @@
 
         ctx.restore();
         requestAnimationFrame(loop);
+    }
+
+    // Fonction utilitaire pour dessiner un Emoji "SOLIDE"
+    function drawEmoji(char, x, y, size) {
+        ctx.font = size + "px Segoe UI Emoji, Arial";
+        ctx.textAlign = "center"; 
+        ctx.textBaseline = "middle";
+        // Fond blanc derrière l'emoji pour l'opacité
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white'; // Couleur de fond
+        ctx.beginPath();
+        ctx.arc(x, y, size/2.2, 0, Math.PI*2);
+        ctx.fill();
+        // Emoji par dessus
+        ctx.fillStyle = 'black'; // Reset (mais l'emoji a ses couleurs)
+        ctx.fillText(char, x, y);
     }
 
     const btnAction = document.getElementById('action-btn');
@@ -337,7 +375,7 @@
     }
 
     function getNearestTarget() {
-        let close = null; let minDist = 100;
+        let close = null; let minDist = 120; // Augmenté pour facilité
         objects.forEach(o => {
             if(o.type === 'grass' || o.type === 'wall') return;
             let d = Math.hypot(player.x - o.x, player.y - o.y);
@@ -350,19 +388,21 @@
         let target = getNearestTarget();
         if(!target) return;
         let dmg = 1; 
-        if(target.hostile) { dmg = inventory.sword * 5; createParticle(target.x, target.y, "💥", "#fff"); } 
+        if(target.hostile) { dmg = inventory.sword * 5; } 
         else if(target.type.includes('tree')) { dmg = inventory.axe * 2; } 
         else if(target.type.includes('rock') || target.type === 'ruby') { dmg = inventory.pickaxe * 2; }
 
         target.hp -= dmg; target.hitTimer = 5;
+        createParticle(target.x, target.y, "💥", "#fff");
+
         if(target.hp <= 0) {
             if(target.type === 'tree') { inventory.wood += 5; showFloat("+5 Bois", target.x, target.y, '#f1c40f'); }
             if(target.type === 'dead_tree') { inventory.wood += 8; showFloat("+8 Bois", target.x, target.y, '#f1c40f'); }
             if(target.type === 'rock') { inventory.stone += 3; showFloat("+3 Pierre", target.x, target.y, '#95a5a6'); }
             if(target.type === 'ruby') { inventory.ruby += 1; showFloat("+1 RUBIS", target.x, target.y, '#e91e63'); }
             if(target.type === 'orc') { 
-                if(Math.random()>0.7) { inventory.ruby++; showFloat("+1 RUBIS", target.x, target.y, '#e91e63'); }
-                else { inventory.wood+=15; showFloat("+15 Bois", target.x, target.y, '#fff'); }
+                 if(Math.random()>0.8) { inventory.ruby++; showFloat("+1 RUBIS", target.x, target.y, '#e91e63'); }
+                 else { inventory.wood+=20; showFloat("+20 Bois", target.x, target.y, '#fff'); }
             }
             objects.splice(objects.indexOf(target), 1);
             updateUI();
@@ -383,32 +423,44 @@
     window.addEventListener('mousemove', e => { if(joyData.active) { let dx=e.clientX-joyData.startX; let dy=e.clientY-joyData.startY; player.moving=true; player.angle=Math.atan2(dy,dx); joyStick.style.transform = `translate(${dx}px, ${dy}px)`; }});
     window.addEventListener('mouseup', endJoy);
 
-    document.getElementById('menu-btn').onclick = () => document.getElementById('craft-menu').style.display = 'block';
+    document.getElementById('menu-btn').onclick = () => {
+        document.getElementById('craft-menu').style.display = 'block';
+        updateUI();
+    };
     window.toggleMenu = () => document.getElementById('craft-menu').style.display = 'none';
 
     window.craft = (type) => {
-        // LOGIQUE MAISON
+        // ARMURE (Special)
+        if(type === 'armor') {
+            if(!window.isAtHome) { showFloat("Pas à la maison !", player.x, player.y, '#e74c3c'); return; }
+            if(inventory.armor >= 3) return;
+            let c = costs.armor[inventory.armor];
+            if(inventory.wood >= c.w && inventory.stone >= c.s && inventory.ruby >= c.r) {
+                inventory.wood-=c.w; inventory.stone-=c.s; inventory.ruby-=c.r;
+                inventory.armor++;
+                // Boost HP
+                player.maxHp = 100 + armorStats[inventory.armor];
+                player.hp = player.maxHp; // Soin complet à l'upgrade
+                showFloat("ARMURE UP !", player.x, player.y, '#3498db');
+                updateUI();
+            }
+            return;
+        }
+
+        // MAISON
         if(type === 'house') {
             if(house.level >= 3) return;
             let cost = costs.house[house.level];
             if(inventory.wood >= cost.w && inventory.stone >= cost.s && inventory.ruby >= cost.r) {
                 inventory.wood -= cost.w; inventory.stone -= cost.s; inventory.ruby -= cost.r;
-                
-                // Si niveau 0 -> On place la maison ICI
-                if(house.level === 0) {
-                    house.active = true;
-                    house.x = player.x;
-                    house.y = player.y;
-                    showFloat("🏠 Base Établie !", player.x, player.y - 50, '#f1c40f');
-                } else {
-                    showFloat("✨ AMÉLIORATION !", house.x, house.y - 50, '#f1c40f');
-                }
+                if(house.level === 0) { house.active = true; house.x = player.x; house.y = player.y; }
                 house.level++;
                 updateUI();
             }
             return;
         }
 
+        // OUTILS
         if(type==='axe' && inventory.wood >= costs.axe) {
             inventory.wood -= costs.axe; inventory.axe++; costs.axe *= 2;
         } else if(type==='pick' && inventory.wood >= costs.pick.w && inventory.stone >= costs.pick.s) {
@@ -424,28 +476,47 @@
         document.getElementById('stone-count').innerText = Math.floor(inventory.stone);
         document.getElementById('ruby-count').innerText = Math.floor(inventory.ruby);
         document.getElementById('hp-count').innerText = Math.floor(player.hp);
+        document.getElementById('max-hp-count').innerText = Math.floor(player.maxHp);
+        document.getElementById('armor-lvl').innerText = inventory.armor;
         
-        // UI MAISON
+        // MAISON BTN
         let hBtn = document.getElementById('btn-house');
-        let hDesc = document.getElementById('house-desc');
-        let hCost = document.getElementById('house-cost-text');
-        let hLvl = document.getElementById('house-lvl');
-        hLvl.innerText = house.level;
-
         if(house.level < 3) {
             let c = costs.house[house.level];
-            let costTxt = c.w + " Bois / " + c.s + " Pierres";
-            if(c.r > 0) costTxt += " / " + c.r + " Rubis";
-            hCost.innerText = "Coût: " + costTxt;
+            let txt = c.w + " Bois / " + c.s + " P";
+            if(c.r > 0) txt += " / " + c.r + " Rubis";
+            document.getElementById('house-cost').innerText = txt;
             hBtn.disabled = (inventory.wood < c.w || inventory.stone < c.s || inventory.ruby < c.r);
-            
-            if(house.level === 0) { hBtn.innerText = "CONSTRUIRE"; hDesc.innerText = "Pose une tente ICI pour te soigner."; }
-            else { hBtn.innerText = "AGRANDIR"; hDesc.innerText = "Améliore pour soigner plus vite."; }
-        } else {
-            hBtn.innerText = "MAX"; hBtn.disabled = true; hCost.innerText = "Niveau Maximum Atteint";
-        }
+            hBtn.innerText = house.level===0 ? "BÂTIR" : "AGRANDIR";
+        } else { hBtn.innerText = "MAX"; hBtn.disabled = true; }
 
-        // UI OUTILS
+        // ARMURE BTN
+        let aBtn = document.getElementById('btn-armor');
+        let aStat = document.getElementById('armor-status');
+        document.getElementById('armor-menu-lvl').innerText = inventory.armor;
+        
+        if(inventory.armor < 3) {
+            let c = costs.armor[inventory.armor];
+            let txt = "";
+            if(c.w>0) txt+=c.w+" Bois ";
+            if(c.s>0) txt+=c.s+" Pierre ";
+            if(c.r>0) txt+=c.r+" Rubis";
+            document.getElementById('armor-cost').innerText = txt;
+            
+            if(!window.isAtHome) {
+                aBtn.disabled = true;
+                aStat.innerText = "⚠️ REVIENS À LA MAISON";
+                aStat.style.color = "#e74c3c";
+            } else {
+                aBtn.disabled = (inventory.wood < c.w || inventory.stone < c.s || inventory.ruby < c.r);
+                aStat.innerText = "✅ Forge disponible";
+                aStat.style.color = "#2ecc71";
+            }
+        } else {
+            aBtn.innerText = "MAX"; aBtn.disabled = true; document.getElementById('armor-cost').innerText = "";
+        }
+        
+        // Outils Stats
         document.getElementById('axe-lvl').innerText = inventory.axe;
         document.getElementById('axe-cost').innerText = Math.floor(costs.axe);
         document.getElementById('pick-lvl').innerText = inventory.pickaxe;
@@ -459,7 +530,10 @@
     }
     
     window.addEventListener('resize', resize);
-    function resize(){ if(window.innerHeight > window.innerWidth) rotateScreen.style.display='flex'; else rotateScreen.style.display='none'; }
+    function resize(){ 
+        if(window.innerHeight > window.innerWidth) rotateScreen.style.display='flex'; 
+        else rotateScreen.style.display='none';
+    }
     init();
 </script>
 </body>
