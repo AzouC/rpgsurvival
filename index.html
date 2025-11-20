@@ -18,23 +18,31 @@
     .ui-layer { position: absolute; top: 0; left: 0;
     width: 100%; height: 100%; pointer-events: none; }
     
-    .hud-left { 
+    /* NOUVEAU: Conteneur pour aligner HUD et Quête horizontalement */
+    .hud-container { 
         position: absolute; top: 10px; left: 10px;
-        display: flex; flex-direction: column; gap: 10px; /* Espace entre HUD et Quête */
-        pointer-events: auto; max-width: 250px; 
+        display: flex; flex-direction: row; /* Aligner horizontalement */
+        gap: 10px; /* Espace entre Inventaire et Quête */
+        pointer-events: auto; 
+        max-width: 90%; 
     }
-    .hud-box { background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex;
-    flex-direction: column; gap: 5px; }
+
+    .hud-box { 
+        background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; 
+        border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex;
+        flex-direction: column; gap: 5px; min-width: 150px; /* Assure une taille minimale */
+    }
     .hud-row { display: flex; justify-content: space-between; gap: 10px;
     }
 
-    /* NOUVEAU: Boîte de Quête sous le HUD */
+    /* Boîte de Quête à droite du HUD (inventaire) */
     .quest-box { 
         background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px;
         border-left: 4px solid #f1c40f; font-size: 15px; /* Texte de quête plus grand */
         text-align: left; 
-        pointer-events: none; 
-        width: 100%; /* S'aligne sur la largeur du HUD-LEFT */
+        pointer-events: auto; /* La quête ne reçoit pas d'events par défaut, on le remet à auto pour le hover/touch */
+        min-width: 150px; /* Assure une taille minimale */
+        max-width: 250px; /* Limite la largeur */
     }
     .quest-title { font-weight: 900;
     text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
@@ -91,9 +99,12 @@
     #death-screen { background: rgba(192, 57, 43, 0.95);
     border-color: #e74c3c; width: 90%; max-width: 400px; }
     
-    /* FULL MAP MODAL */
-    #map-modal { max-width: 90vw;
-    max-height: 90vh; width: auto; height: auto; padding: 10px; }
+    /* MODIF: CARTE PLUS PETITE */
+    #map-modal { 
+        max-width: 700px; /* Plus petit que 90vw */
+        max-height: 80vh; /* Plus petit que 90vh */
+        width: auto; height: auto; padding: 10px; 
+    }
     #fullMapCanvas { border: 2px solid #fff; background: #000;
     }
 
@@ -107,10 +118,7 @@
 <div id="night-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:black;pointer-events:none;opacity:0;z-index:10;"></div>
 
 <div class="ui-layer">
-    <div id="save-notif" style="position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#27ae60;color:white;padding:5px 15px;border-radius:5px;display:none;z-index:5001;">💾 Sauvegarde auto...</div>
-
-    <div class="hud-left">
-        <div class="hud-box">
+    <div class="hud-container"> <div class="hud-box">
             <div class="hud-row" style="color:#e74c3c; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">
                 <span>❤️ VIE</span> <span id="hud-hp">100/100</span>
             </div>
@@ -160,8 +168,7 @@
 <div id="map-modal" class="modal">
     <h2>🗺️ CARTE DU MONDE (4000x4000)</h2>
     
-    <canvas id="fullMapCanvas" width="500" height="500"></canvas>
-    <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
+    <canvas id="fullMapCanvas" width="400" height="400"></canvas> <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
 </div>
 
 <div id="death-screen" class="modal">
@@ -176,15 +183,15 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V9 - Zone Sécurisée & Carte Complète
+ * SURVIVAL RPG ULTIMATE V9 - Zone Sécurisée étendue, Quête déplacée, Nuit moins sombre, Cycle lent
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
 const WORLD_W = 4000;
 const WORLD_H = 4000;
 const SCALE_BASE = 4; // Taille d'un pixel dans le jeu
-const SAFE_ZONE_X = 500;
-// Nouvelle zone sans mobs de 0 à 500 X
+const SAFE_ZONE_X = 1000; // MODIF: Zone sécurisée étendue de 0 à 1000 X
+// Nouvelle zone sans mobs de 0 à 1000 X
 
 const PALETTE = [
     'rgba(0,0,0,0)', '#000000', '#FFFFFF', '#8b4513', '#2ecc71', 
@@ -335,7 +342,7 @@ function getGroundColor() {
     return PALETTE[4];
 }
 
-// --- WORLD GEN (Mobs réduits et Zone Sécurisée) ---
+// --- WORLD GEN (Mobs réduits et Zone Sécurisée à 1000) ---
 function generateWorld() {
     game.objects = [];
     const spawn = (type, minX, maxX, count) => {
@@ -345,10 +352,10 @@ function generateWorld() {
             createObject(type, x, y);
         }
     };
-    // 1. FOREST (Mobs réduits de 50% et ne spawnent qu'après X=500)
+    // 1. FOREST (Zone Sécurisée étendue de 0 à 1000. AUCUN MOB)
     spawn('tree', 0, 1000, 120);
     spawn('stone', 0, 1000, 60);
-    spawn('slime', SAFE_ZONE_X, 1000, 10); // Mobs: 10 (au lieu de 20) et commencent à 500
+    // Slimes supprimés car la Forêt (0-1000) est maintenant la zone sécurisée.
     
     // 2. DESERT (Mobs réduits de 50%)
     spawn('gold_rock', 1000, 2000, 40);
@@ -446,6 +453,9 @@ function update(dt) {
     game.objects.forEach(o => {
         if(o.hostile && o.hp > 0) {
             let dist = Math.hypot(game.player.x - o.x, game.player.y - o.y);
+            // Vérifie si le mob est dans la zone sécurisée (1000 blocs) pour l'empêcher de bouger si c'est le cas
+            if (o.x < SAFE_ZONE_X) return; 
+
             if(dist < 400) { 
                 o.x += (game.player.x - o.x) / dist * o.speed;
                 o.y += (game.player.y - o.y) / dist * o.speed;
@@ -470,7 +480,7 @@ function update(dt) {
             } 
         } 
     } 
-    // CORRECTION : Cycle jour/nuit 5x plus lent
+    // Cycle jour/nuit 5x plus lent
     game.dayTime += 0.0001; 
     if(game.dayTime > 1) game.dayTime = 0;
     
@@ -521,7 +531,7 @@ function draw() {
         ctx.fillText(p.text, p.x - game.camera.x, p.y - game.camera.y);
     }
     
-    // CORRECTION : La nuit est moins sombre (max 0.5 au lieu de 1.0)
+    // La nuit est moins sombre (max 0.5 au lieu de 1.0)
     document.getElementById('night-overlay').style.opacity = Math.abs(game.dayTime - 0.5);
 }
 
@@ -795,9 +805,7 @@ function saveGame() {
         objs: game.objects.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp) || o.solid) 
     };
     localStorage.setItem('rpg_save_v7', JSON.stringify(data)); 
-    let notif = document.getElementById('save-notif'); 
-    notif.style.display = 'block'; 
-    setTimeout(() => notif.style.display='none', 2000);
+    // MODIF: Suppression de la notification de sauvegarde
 } 
 
 function loadGame(isRespawn = false) { 
@@ -893,7 +901,7 @@ function init() {
     // 3. Init Inputs (Touch & PC)
     initInputs();
     
-    // CORRECTION POUR LE BUG DE CHARGEMENT : Force la mise à jour de l'UI
+    // Force la mise à jour de l'UI
     updateUI(); 
 
     // 4. Start Loop
