@@ -3,411 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Survival Island V2</title>
+    <title>Survival RPG V3 - Lava Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
         
-        /* Écran de rotation */
         #rotate-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; text-align: center; }
-        
-        /* Canvas Jeu */
-        #gameCanvas { display: block; background: #4CAF50; }
+        #gameCanvas { display: block; }
 
         /* UI Overlay */
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         
         /* HUD Haut */
-        .hud-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; display: flex; gap: 15px; pointer-events: auto; border: 2px solid rgba(255,255,255,0.3); }
+        .hud-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; display: flex; gap: 15px; pointer-events: auto; border: 2px solid rgba(255,255,255,0.3); flex-wrap: wrap; }
         
         /* Bouton Menu */
-        #menu-btn { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; background: #f39c12; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; pointer-events: auto; border: 2px solid white; cursor: pointer; }
+        #menu-btn { position: absolute; top: 10px; right: 10px; width: 45px; height: 45px; background: #f39c12; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: auto; border: 2px solid white; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
+        #menu-btn:active { transform: translateY(4px); box-shadow: none; }
 
         /* Contrôles Bas */
         .controls-zone { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; px: 20px; box-sizing: border-box; padding: 0 40px; pointer-events: auto; }
 
-        /* Joystick */
-        #joystick-zone { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(255,255,255,0.8); border-radius: 50%; position: absolute; top: 35px; left: 35px; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #joystick-zone { width: 130px; height: 130px; background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
+        #joystick-stick { width: 60px; height: 60px; background: rgba(255,255,255,0.8); border-radius: 50%; position: absolute; top: 35px; left: 35px; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
-        /* Bouton Action */
-        #action-btn { width: 90px; height: 90px; background: #e74c3c; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); active { transform: scale(0.95); } }
+        #action-btn { width: 100px; height: 100px; background: #e74c3c; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 45px; box-shadow: 0 6px 0 #c0392b; transition: background 0.2s; }
+        #action-btn:active { transform: translateY(6px); box-shadow: none; }
         
         /* Menu Crafting */
-        #craft-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #34495e; width: 80%; max-width: 500px; border-radius: 15px; padding: 20px; border: 4px solid #fff; display: none; color: white; z-index: 2000; pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .craft-item { background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .craft-btn { background: #27ae60; border: none; color: white; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        .craft-btn:disabled { background: #7f8c8d; opacity: 0.5; }
-        .close-btn { background: #c0392b; width: 100%; padding: 10px; border: none; color: white; font-size: 16px; border-radius: 5px; margin-top: 10px; }
+        #craft-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 85%; max-width: 550px; border-radius: 15px; padding: 20px; border: 4px solid #bdc3c7; display: none; color: white; z-index: 2000; pointer-events: auto; box-shadow: 0 0 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; }
+        .craft-item { background: rgba(0,0,0,0.3); padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .craft-btn { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .craft-btn:disabled { background: #95a5a6; opacity: 0.5; cursor: not-allowed; }
+        .close-btn { background: #e74c3c; width: 100%; padding: 15px; border: none; color: white; font-size: 18px; font-weight: bold; border-radius: 5px; margin-top: 15px; }
 
-        /* Messages flottants */
-        .floater { position: absolute; color: white; font-weight: bold; font-size: 20px; text-shadow: 2px 2px 0 #000; animation: floatUp 1s forwards; pointer-events: none; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+        .floater { position: absolute; color: white; font-weight: 900; font-size: 24px; text-shadow: 2px 2px 0 #000; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 1000; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.2); } }
+        
+        /* Barre de vie Boss/Mob */
+        .hp-bar { position: absolute; width: 40px; height: 5px; background: red; transform: translate(-50%, -30px); display: none; }
     </style>
 </head>
 <body>
 
-    <div id="rotate-screen">
-        <h1>📱 Tourne ton écran</h1>
-        <p>Ce jeu se joue en mode paysage !</p>
-    </div>
-
+    <div id="rotate-screen"><h1>📱 Tourne ton écran</h1><p>Jeu en mode Paysage uniquement</p></div>
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
         <div class="hud-panel">
-            <span>🪵 Bois: <b id="wood-count">0</b></span>
-            <span>🪨 Pierre: <b id="stone-count">0</b></span>
-            <span>❤️ Vie: <b id="hp-count">100%</b></span>
+            <span>❤️ <b id="hp-count">100</b></span>
+            <span>🪵 <b id="wood-count">0</b></span>
+            <span>🪨 <b id="stone-count">0</b></span>
+            <span>💎 <b id="ruby-count">0</b></span>
         </div>
-
-        <div id="menu-btn">🛠️</div>
-
+        <div id="menu-btn">🎒</div>
         <div class="controls-zone">
-            <div id="joystick-zone">
-                <div id="joystick-stick"></div>
-            </div>
-            <div id="action-btn">👊</div>
+            <div id="joystick-zone"><div id="joystick-stick"></div></div>
+            <div id="action-btn">⚔️</div>
         </div>
     </div>
 
     <div id="craft-menu">
-        <h2 style="margin-top:0; text-align:center;">CRAFT & OUTILS</h2>
+        <h2 style="margin:0 0 20px 0; text-align:center; color:#f1c40f;">FORGE & ÉQUIPEMENT</h2>
         
         <div class="craft-item">
             <div>
-                <strong>🪓 Hache (Niv <span id="axe-lvl">0</span>)</strong><br>
-                <small>Permet de couper les arbres</small><br>
-                <small style="color:#f1c40f">Coût: <span id="axe-cost">10</span> Bois</small>
+                <strong style="color:#3498db">🪓 Hache (Niv <span id="axe-lvl">1</span>)</strong><br>
+                <small>Coupe le bois plus vite</small><br>
+                <small style="color:#f1c40f">Prix: <span id="axe-cost">20</span> Bois</small>
             </div>
-            <button class="craft-btn" id="btn-axe" onclick="craft('axe')">AMÉLIORER</button>
+            <button class="craft-btn" id="btn-axe" onclick="craft('axe')">UPGRADE</button>
         </div>
 
         <div class="craft-item">
             <div>
-                <strong>⛏️ Pioche (Niv <span id="pick-lvl">0</span>)</strong><br>
-                <small>Permet de casser les rochers</small><br>
-                <small style="color:#f1c40f">Coût: <span id="pick-cost">10</span> Bois + 5 Pierre</small>
+                <strong style="color:#95a5a6">⛏️ Pioche (Niv <span id="pick-lvl">1</span>)</strong><br>
+                <small>Casse la pierre plus vite</small><br>
+                <small style="color:#f1c40f">Prix: <span id="pick-cost">20</span> Bois / 10 Pierre</small>
             </div>
-            <button class="craft-btn" id="btn-pick" onclick="craft('pick')">AMÉLIORER</button>
+            <button class="craft-btn" id="btn-pick" onclick="craft('pick')">UPGRADE</button>
         </div>
 
-        <button class="close-btn" onclick="toggleMenu()">RETOUR AU JEU</button>
+        <div class="craft-item">
+            <div>
+                <strong style="color:#e74c3c">⚔️ Épée (Niv <span id="sword-lvl">1</span>)</strong><br>
+                <small>Dégâts aux monstres</small><br>
+                <small style="color:#f1c40f">Prix: <span id="sword-cost">50</span> Bois / 5 Rubis</small>
+            </div>
+            <button class="craft-btn" id="btn-sword" onclick="craft('sword')">UPGRADE</button>
+        </div>
+        
+        <div class="craft-item">
+            <div>
+                <strong>🍗 Manger</strong><br>
+                <small>Soigne +20 PV</small><br>
+                <small style="color:#f1c40f">Prix: 5 Bois (Feu de camp)</small>
+            </div>
+            <button class="craft-btn" id="btn-heal" onclick="heal()">SOIGNER</button>
+        </div>
+
+        <button class="close-btn" onclick="toggleMenu()">RETOURNER AU COMBAT</button>
     </div>
 
 <script>
-    // --- CONFIGURATION ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const rotateScreen = document.getElementById('rotate-screen');
     
-    // Joueur
-    const player = { x: 0, y: 0, speed: 3, size: 30, moving: false, angle: 0, hp: 100 };
-    const inventory = { wood: 0, stone: 0, axe: 0, pickaxe: 0 }; // axe 0 = mains nues
-    const costs = { axe: 10, pick: {wood: 10, stone: 5} };
-
-    // Monde
-    const objects = [];
-    const particles = [];
-    const mapSize = 2000; // Monde plus grand
+    // --- CONFIG DU MONDE ---
+    const MAP_SIZE = 3000; 
+    const LAVA_START = 2200; // La zone de lave commence à X=2200
     
-    // Caméra
+    const player = { x: 500, y: 500, speed: 5, size: 25, moving: false, angle: 0, hp: 100, maxHp: 100, iframes: 0 };
+    // On commence avec tout niveau 1
+    const inventory = { wood: 0, stone: 0, ruby: 0, axe: 1, pickaxe: 1, sword: 1 }; 
+    const costs = { axe: 20, pick: {w:20, s:10}, sword: {w:50, r:5} };
+
+    let objects = [];
+    let particles = [];
     const camera = { x: 0, y: 0 };
 
-    // Joystick
+    // Input
+    let joyData = { active: false, startX: 0, startY: 0, dx: 0, dy: 0 };
     const joyZone = document.getElementById('joystick-zone');
     const joyStick = document.getElementById('joystick-stick');
-    let joyData = { active: false, dx: 0, dy: 0, maxDist: 35 };
 
-    // --- INITIALISATION ---
     function init() {
         resize();
-        player.x = mapSize/2;
-        player.y = mapSize/2;
         generateWorld();
+        updateUI();
         loop();
     }
 
     function generateWorld() {
-        // Générer 100 Arbres
-        for(let i=0; i<100; i++) {
-            objects.push({
-                type: 'tree',
-                x: Math.random() * mapSize,
-                y: Math.random() * mapSize,
-                hp: 3,
-                emoji: ['🌲', '🌳'][Math.floor(Math.random()*2)],
-                size: 40
-            });
-        }
-        // Générer 60 Rochers
-        for(let i=0; i<60; i++) {
-            objects.push({
-                type: 'rock',
-                x: Math.random() * mapSize,
-                y: Math.random() * mapSize,
-                hp: 4,
-                emoji: '🪨',
-                size: 35
-            });
-        }
-        // Générer 200 Décoration (Herbe)
-        for(let i=0; i<200; i++) {
-            objects.push({
-                type: 'grass',
-                x: Math.random() * mapSize,
-                y: Math.random() * mapSize,
-                emoji: ['🌿', '🌱', '🌼'][Math.floor(Math.random()*3)],
-                size: 15
-            });
-        }
-    }
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        // Gestion Paysage/Portrait
-        if(window.innerHeight > window.innerWidth) {
-            rotateScreen.style.display = 'flex';
-        } else {
-            rotateScreen.style.display = 'none';
-        }
-    }
-    window.addEventListener('resize', resize);
-
-    // --- INPUTS (JOYSTICK & ACTION) ---
-    joyZone.addEventListener('touchstart', startJoy, {passive: false});
-    joyZone.addEventListener('touchmove', moveJoy, {passive: false});
-    joyZone.addEventListener('touchend', endJoy);
-    // Souris pour debug PC
-    joyZone.addEventListener('mousedown', (e) => { startJoy(e); window.addEventListener('mousemove', moveMouseJoy); window.addEventListener('mouseup', endJoy); });
-
-    function startJoy(e) {
-        joyData.active = true;
-        joyData.startX = e.touches ? e.touches[0].clientX : e.clientX;
-        joyData.startY = e.touches ? e.touches[0].clientY : e.clientY;
-    }
-    
-    function moveMouseJoy(e) { moveJoy(e); }
-
-    function moveJoy(e) {
-        if(!joyData.active) return;
-        e.preventDefault();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        objects = [];
         
-        let dx = cx - joyData.startX;
-        let dy = cy - joyData.startY;
-        const dist = Math.sqrt(dx*dx + dy*dy);
+        // --- ZONE VERTE (Départ) ---
+        for(let i=0; i<150; i++) spawnObj('tree', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
+        for(let i=0; i<80; i++) spawnObj('rock', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
+        for(let i=0; i<300; i++) spawnObj('grass', Math.random()*LAVA_START, Math.random()*MAP_SIZE);
+
+        // --- ZONE LAVE (Fin) ---
+        // Le chateau au centre de la zone lave
+        const castleX = LAVA_START + (MAP_SIZE - LAVA_START)/2;
+        const castleY = MAP_SIZE/2;
         
-        if(dist > joyData.maxDist) {
-            dx = (dx/dist) * joyData.maxDist;
-            dy = (dy/dist) * joyData.maxDist;
+        // Murs du chateau (Carré)
+        for(let x=castleX-200; x<=castleX+200; x+=40) {
+            spawnObj('wall', x, castleY-200);
+            spawnObj('wall', x, castleY+200);
         }
+        for(let y=castleY-200; y<=castleY+200; y+=40) {
+            spawnObj('wall', castleX-200, y);
+            spawnObj('wall', castleX+200, y);
+        }
+
+        // Ressources Lave
+        for(let i=0; i<60; i++) spawnObj('dead_tree', LAVA_START + Math.random()*(MAP_SIZE-LAVA_START), Math.random()*MAP_SIZE);
+        for(let i=0; i<40; i++) spawnObj('ruby', LAVA_START + Math.random()*(MAP_SIZE-LAVA_START), Math.random()*MAP_SIZE);
         
-        joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
-        player.moving = true;
-        player.angle = Math.atan2(dy, dx);
+        // MOBS (Orcs)
+        for(let i=0; i<20; i++) {
+            spawnObj('orc', castleX + (Math.random()-0.5)*600, castleY + (Math.random()-0.5)*600);
+        }
     }
 
-    function endJoy() {
-        joyData.active = false;
-        player.moving = false;
-        joyStick.style.transform = `translate(0px, 0px)`;
-        window.removeEventListener('mousemove', moveMouseJoy);
+    function spawnObj(type, x, y) {
+        let obj = { x, y, type, hp: 1, maxHp: 1, size: 40, emoji: '❓' };
+        if(type === 'tree') { obj.emoji = '🌲'; obj.hp = 15; obj.maxHp = 15; }
+        if(type === 'dead_tree') { obj.emoji = '🍂'; obj.hp = 20; obj.maxHp = 20; }
+        if(type === 'rock') { obj.emoji = '🪨'; obj.hp = 25; obj.maxHp = 25; }
+        if(type === 'ruby') { obj.emoji = '💎'; obj.hp = 40; obj.maxHp = 40; obj.size = 30; }
+        if(type === 'grass') { obj.emoji = ['🌿','🌱'][Math.floor(Math.random()*2)]; obj.size = 20; }
+        if(type === 'wall') { obj.emoji = '🧱'; obj.hp = 9999; obj.maxHp = 9999; obj.solid = true; }
+        if(type === 'orc') { 
+            obj.emoji = '👹'; obj.hp = 50; obj.maxHp = 50; 
+            obj.speed = 2; obj.hostile = true; 
+        }
+        objects.push(obj);
     }
 
-    // Bouton Action
-    document.getElementById('action-btn').addEventListener('touchstart', (e) => { e.preventDefault(); handleAction(); });
-    document.getElementById('action-btn').addEventListener('mousedown', handleAction);
-    document.getElementById('menu-btn').addEventListener('click', toggleMenu);
+    // --- GAME LOOP ---
+    function loop() {
+        // 1. Physique Joueur
+        if(joyData.active) {
+            let nx = player.x + Math.cos(player.angle) * player.speed;
+            let ny = player.y + Math.sin(player.angle) * player.speed;
+            // Collision murs
+            let collide = false;
+            objects.forEach(o => {
+                if(o.solid && Math.hypot(nx-o.x, ny-o.y) < player.size + o.size/2) collide = true;
+            });
+            if(!collide) {
+                player.x = Math.max(0, Math.min(MAP_SIZE, nx));
+                player.y = Math.max(0, Math.min(MAP_SIZE, ny));
+            }
+        }
 
-    // --- LOGIQUE JEU ---
-    function handleAction() {
-        // Trouver l'objet le plus proche
-        let target = null;
-        let minIds = 60; // Distance d'interaction
-
-        objects.forEach((obj, i) => {
-            if(obj.type === 'grass') return;
-            const dist = Math.hypot(player.x - obj.x, player.y - obj.y);
-            if(dist < minIds) {
-                target = obj;
-                target.index = i;
+        // 2. IA Mobs
+        if(player.iframes > 0) player.iframes--;
+        objects.forEach(o => {
+            if(o.hostile && o.hp > 0) {
+                const dist = Math.hypot(player.x - o.x, player.y - o.y);
+                // Aggro distance
+                if(dist < 400 && dist > 30) {
+                    o.x += (player.x - o.x) / dist * o.speed;
+                    o.y += (player.y - o.y) / dist * o.speed;
+                }
+                // Attaque Joueur
+                if(dist < 40 && player.iframes <= 0) {
+                    player.hp -= 10;
+                    player.iframes = 30; // Invulnérable 0.5s
+                    showFloat("💔 -10", player.x, player.y, '#e74c3c');
+                    screenShake();
+                    updateUI();
+                }
             }
         });
 
-        if(target) {
-            // Logique de récolte
-            if(target.type === 'tree') {
-                if(inventory.axe > 0) hitObject(target, 'wood', 1, "🪵");
-                else showFloat("Besoin d'une Hache !");
-            } else if(target.type === 'rock') {
-                if(inventory.pickaxe > 0) hitObject(target, 'stone', 1, "🪨");
-                else showFloat("Besoin d'une Pioche !");
-            }
-        } else {
-            // Attaque dans le vide
-            animatePlayerAction();
-        }
-    }
-
-    function hitObject(obj, resName, qty, icon) {
-        animatePlayerAction();
-        obj.hp--;
-        // Effet visuel (shake)
-        obj.x += (Math.random()-0.5)*5;
-        
-        if(obj.hp <= 0) {
-            inventory[resName] += qty + (resName === 'wood' ? inventory.axe-1 : inventory.pickaxe-1); // Bonus niveau
-            objects.splice(obj.index, 1);
-            showFloat(`+${qty} ${icon}`);
-            updateUI();
-        } else {
-            // Son "Pok" visuel
-            createParticle(obj.x, obj.y, '💥');
-        }
-    }
-
-    function createParticle(x, y, char) {
-        particles.push({x, y, life: 20, char});
-    }
-
-    function showFloat(text) {
-        const el = document.createElement('div');
-        el.className = 'floater';
-        el.innerText = text;
-        el.style.left = (window.innerWidth/2) + 'px';
-        el.style.top = (window.innerHeight/2 - 50) + 'px';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-    }
-
-    function toggleMenu() {
-        const m = document.getElementById('craft-menu');
-        m.style.display = m.style.display === 'block' ? 'none' : 'block';
-        updateUI();
-    }
-
-    window.craft = function(type) {
-        if(type === 'axe') {
-            if(inventory.wood >= costs.axe) {
-                inventory.wood -= costs.axe;
-                inventory.axe++;
-                costs.axe = Math.floor(costs.axe * 1.5);
-                showFloat("Hache améliorée !");
-            }
-        } else if(type === 'pick') {
-            if(inventory.wood >= costs.pick.wood && inventory.stone >= costs.pick.stone) {
-                inventory.wood -= costs.pick.wood;
-                inventory.stone -= costs.pick.stone;
-                inventory.pickaxe++;
-                costs.pick.wood = Math.floor(costs.pick.wood * 1.2);
-                costs.pick.stone = Math.floor(costs.pick.stone * 1.2);
-                showFloat("Pioche améliorée !");
-            }
-        }
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('wood-count').innerText = inventory.wood;
-        document.getElementById('stone-count').innerText = inventory.stone;
-        document.getElementById('axe-lvl').innerText = inventory.axe;
-        document.getElementById('pick-lvl').innerText = inventory.pickaxe;
-        
-        // Bouton Action Icone
-        const btn = document.getElementById('action-btn');
-        if(inventory.axe === 0 && inventory.pickaxe === 0) btn.innerText = "👊";
-        else if(inventory.pickaxe > inventory.axe) btn.innerText = "⛏️";
-        else btn.innerText = "🪓";
-        
-        // Update menu costs
-        document.getElementById('axe-cost').innerText = costs.axe;
-        document.getElementById('pick-cost').innerText = costs.pick.wood + " B / " + costs.pick.stone + " P";
-        
-        // Enable/Disable buttons
-        document.getElementById('btn-axe').disabled = inventory.wood < costs.axe;
-        document.getElementById('btn-pick').disabled = (inventory.wood < costs.pick.wood || inventory.stone < costs.pick.stone);
-    }
-
-    // --- BOUCLE PRINCIPALE ---
-    let actionAnim = 0;
-    function animatePlayerAction() { actionAnim = 10; }
-
-    function loop() {
-        // Update physique
-        if(player.moving) {
-            player.x += Math.cos(player.angle) * player.speed;
-            player.y += Math.sin(player.angle) * player.speed;
-            
-            // Limites carte
-            if(player.x < 0) player.x = 0;
-            if(player.y < 0) player.y = 0;
-            if(player.x > mapSize) player.x = mapSize;
-            if(player.y > mapSize) player.y = mapSize;
+        if(player.hp <= 0) {
+            alert("VOUS ÊTES MORT ! L'île vous a vaincu.");
+            location.reload();
         }
 
-        // Caméra suit joueur
+        // 3. Rendu
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Caméra
         camera.x = player.x - canvas.width/2;
         camera.y = player.y - canvas.height/2;
 
-        // Rendu
-        ctx.fillStyle = '#2e8b57'; // Herbe foncée
+        // Fond Dynamique (Herbe vs Lave)
+        ctx.fillStyle = '#2ecc71'; // Vert
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        
         ctx.save();
         ctx.translate(-camera.x, -camera.y);
 
-        // Grille sol (pour effet de vitesse)
+        // Dessiner Sol Lave
+        ctx.fillStyle = '#3c1212'; // Marron foncé/Rouge
+        ctx.fillRect(LAVA_START, 0, MAP_SIZE - LAVA_START, MAP_SIZE);
+
+        // Grille
         ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        for(let x=0; x<mapSize; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,mapSize); }
-        for(let y=0; y<mapSize; y+=100) { ctx.moveTo(0,y); ctx.lineTo(mapSize,y); }
+        for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+        for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
         ctx.stroke();
 
-        // Objets (Triés par Y pour effet de profondeur)
+        // Objets (Z-sort)
         objects.sort((a,b) => a.y - b.y);
-        objects.forEach(obj => {
-            // Optimisation: ne dessiner que si visible
-            if(obj.x > camera.x - 50 && obj.x < camera.x + canvas.width + 50 &&
-               obj.y > camera.y - 50 && obj.y < camera.y + canvas.height + 50) {
-                   ctx.font = obj.size + "px Serif";
-                   ctx.textAlign = "center";
-                   ctx.textBaseline = "middle";
-                   ctx.fillText(obj.emoji, obj.x, obj.y);
+        objects.forEach(o => {
+            // Culling (ne dessiner que ce qu'on voit)
+            if(Math.abs(o.x - player.x) < canvas.width && Math.abs(o.y - player.y) < canvas.height) {
+                
+                // Ombre
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(o.x, o.y+10, o.size/1.5, o.size/3, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                // Emoji
+                ctx.font = o.size + "px Segoe UI Emoji";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                // Effet de dégât (secousse)
+                let shakeX = 0;
+                if(o.hitTimer > 0) {
+                    shakeX = (Math.random()-0.5)*10;
+                    o.hitTimer--;
+                }
+                ctx.fillText(o.emoji, o.x + shakeX, o.y);
+
+                // Barre de vie pour mobs et rochers entamés
+                if((o.hostile || o.hp < o.maxHp) && o.type !== 'grass') {
+                    const pct = o.hp / o.maxHp;
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(o.x - 20, o.y - 30, 40, 6);
+                    ctx.fillStyle = o.hostile ? '#e74c3c' : '#f1c40f';
+                    ctx.fillRect(o.x - 20, o.y - 30, 40 * pct, 6);
+                }
             }
         });
 
         // Joueur
-        ctx.save();
         ctx.translate(player.x, player.y);
-        // Si action, petite secousse
-        if(actionAnim > 0) {
-            ctx.rotate(Math.sin(actionAnim)*0.2);
-            actionAnim--;
+        if(player.iframes % 4 < 2) { // Clignote si touché
+            ctx.font = "40px Segoe UI Emoji";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🤠", 0, 0);
+            
+            // Arme en main
+            ctx.font = "25px Segoe UI Emoji";
+            let toolIcon = "🗡️";
+            // Logic visuelle simple pour l'outil
+            ctx.fillText(toolIcon, 20, 10);
         }
-        ctx.font = "40px Serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("🤠", 0, 0);
         ctx.restore();
 
-        // Particules
-        for(let i=particles.length-1; i>=0; i--) {
-            let p = particles[i];
-            ctx.font = "20px Arial";
-            ctx.fillText(p.char, p.x, p.y);
-            p.y -= 1;
-            p.life--;
-            if(p.life <= 0) particles.splice(i, 1);
-        }
+        // Update Bouton Action Contextuel
+        updateActionButton();
+
+        // Particules UI
+        particles.forEach((p, i) => {
+            p.y -= 2; p.life--;
+            ctx.globalAlpha = p.life/30;
+            ctx.fillStyle = p.color;
+            ctx.font = "bold 20px Arial";
+            ctx.fillText(p.text, p.x - camera.x, p.y - camera.y);
+            if(p.life<=0) particles.splice(i, 1);
+        });
+        ctx.globalAlpha = 1;
 
         ctx.restore();
         requestAnimationFrame(loop);
     }
 
-    init();
+    // --- COMBAT & RECOLTE ---
+    const btnAction = document.getElementById('action-btn');
 
+    function updateActionButton() {
+        // Détermine l'objet le plus proche pour changer l'icone
+        let target = getNearestTarget();
+        if(!target) { btnAction.innerText = "⚔️"; btnAction.style.background = "#bdc3c7"; return; }
+
+        if(target.hostile) { btnAction.innerText = "🗡️"; btnAction.style.background = "#e74c3c"; } // Rouge
+        else if(target.type === 'tree' || target.type === 'dead_tree') { btnAction.innerText = "🪓"; btnAction.style.background = "#e67e22"; } // Orange
+        else if(target.type === 'rock' || target.type === 'ruby') { btnAction.innerText = "⛏️"; btnAction.style.background = "#95a5a6"; } // Gris
+    }
+
+    function getNearestTarget() {
+        let close = null;
+        let minDist = 100;
+        objects.forEach(o => {
+            if(o.type === 'grass' || o.type === 'wall') return;
+            let d = Math.hypot(player.x - o.x, player.y - o.y);
+            if(d < minDist) { minDist = d; close = o; }
+        });
+        return close;
+    }
+
+    function handleAction() {
+        let target = getNearestTarget();
+        if(!target) return;
+
+        // Calcul dégâts
+        let dmg = 1; 
+        let toolUsed = "";
+        
+        if(target.hostile) {
+            dmg = inventory.sword * 5; // Epée fait mal
+            toolUsed = "sword";
+            createParticle(target.x, target.y, "💥"+dmg, "#fff");
+        } else if(target.type.includes('tree')) {
+            dmg = inventory.axe * 2; // Hache vs Arbre
+            toolUsed = "axe";
+        } else if(target.type.includes('rock') || target.type === 'ruby') {
+            dmg = inventory.pickaxe * 2;
+            toolUsed = "pick";
+        }
+
+        // Appliquer dégâts
+        target.hp -= dmg;
+        target.hitTimer = 5; // Pour effet visuel
+
+        if(target.hp <= 0) {
+            // Loot
+            if(target.type === 'tree') { inventory.wood += 5; showFloat("+5 Bois", target.x, target.y, '#f1c40f'); }
+            if(target.type === 'dead_tree') { inventory.wood += 8; showFloat("+8 Bois Sec", target.x, target.y, '#f1c40f'); }
+            if(target.type === 'rock') { inventory.stone += 3; showFloat("+3 Pierre", target.x, target.y, '#95a5a6'); }
+            if(target.type === 'ruby') { inventory.ruby += 1; showFloat("+1 RUBIS", target.x, target.y, '#e91e63'); }
+            if(target.type === 'orc') { 
+                // Drop orc
+                if(Math.random()>0.5) { inventory.ruby++; showFloat("+1 RUBIS", target.x, target.y, '#e91e63'); }
+                else { inventory.wood+=10; showFloat("+10 Loot", target.x, target.y, '#fff'); }
+            }
+
+            // Supprimer objet
+            objects.splice(objects.indexOf(target), 1);
+            updateUI();
+        }
+    }
+
+    // --- UI & EVENTS ---
+    function createParticle(x, y, text, color) {
+        particles.push({x, y, text, color, life: 30});
+    }
+    function showFloat(text, x, y, color) { createParticle(x, y-20, text, color); }
+    function screenShake() {
+        canvas.style.transform = `translate(${Math.random()*10-5}px, ${Math.random()*10-5}px)`;
+        setTimeout(() => canvas.style.transform = "none", 200);
+    }
+
+    btnAction.addEventListener('touchstart', (e)=>{e.preventDefault(); handleAction();});
+    btnAction.addEventListener('mousedown', (e)=>{e.preventDefault(); handleAction();});
+
+    // Joystick Logic
+    joyZone.addEventListener('touchstart', e => {
+        joyData.active = true;
+        joyData.startX = e.touches[0].clientX;
+        joyData.startY = e.touches[0].clientY;
+    }, {passive:false});
+    
+    joyZone.addEventListener('touchmove', e => {
+        e.preventDefault();
+        if(!joyData.active) return;
+        let dx = e.touches[0].clientX - joyData.startX;
+        let dy = e.touches[0].clientY - joyData.startY;
+        let dist = Math.min(50, Math.hypot(dx, dy));
+        let angle = Math.atan2(dy, dx);
+        joyStick.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+        player.moving = true;
+        player.angle = angle;
+    }, {passive:false});
+
+    const endJoy = () => { joyData.active = false; player.moving = false; joyStick.style.transform = `translate(0,0)`; };
+    joyZone.addEventListener('touchend', endJoy);
+
+    // Souris PC
+    joyZone.addEventListener('mousedown', e => { joyData.active=true; joyData.startX=e.clientX; joyData.startY=e.clientY; });
+    window.addEventListener('mousemove', e => {
+        if(joyData.active) {
+            let dx = e.clientX - joyData.startX;
+            let dy = e.clientY - joyData.startY;
+            player.moving = true;
+            player.angle = Math.atan2(dy, dx);
+            joyStick.style.transform = `translate(${dx}px, ${dy}px)`; // Simplifié pour PC
+        }
+    });
+    window.addEventListener('mouseup', endJoy);
+
+    // Crafting
+    document.getElementById('menu-btn').onclick = () => document.getElementById('craft-menu').style.display = 'block';
+    window.toggleMenu = () => document.getElementById('craft-menu').style.display = 'none';
+
+    window.craft = (type) => {
+        if(type==='axe' && inventory.wood >= costs.axe) {
+            inventory.wood -= costs.axe; inventory.axe++; costs.axe *= 2;
+        } else if(type==='pick' && inventory.wood >= costs.pick.w && inventory.stone >= costs.pick.s) {
+            inventory.wood -= costs.pick.w; inventory.stone -= costs.pick.s; inventory.pickaxe++;
+            costs.pick.w *= 1.5; costs.pick.s *= 1.5;
+        } else if(type==='sword' && inventory.wood >= costs.sword.w && inventory.ruby >= costs.sword.r) {
+            inventory.wood -= costs.sword.w; inventory.ruby -= costs.sword.r; inventory.sword++;
+            costs.sword.w *= 2; costs.sword.r += 5;
+        }
+        updateUI();
+    };
+    
+    window.heal = () => {
+        if(inventory.wood >= 5 && player.hp < player.maxHp) {
+            inventory.wood -= 5;
+            player.hp = Math.min(player.maxHp, player.hp + 20);
+            updateUI();
+            showFloat("++ PV", player.x, player.y, 'red');
+        }
+    };
+
+    function updateUI() {
+        document.getElementById('wood-count').innerText = Math.floor(inventory.wood);
+        document.getElementById('stone-count').innerText = Math.floor(inventory.stone);
+        document.getElementById('ruby-count').innerText = Math.floor(inventory.ruby);
+        document.getElementById('hp-count').innerText = Math.floor(player.hp);
+        
+        document.getElementById('axe-lvl').innerText = inventory.axe;
+        document.getElementById('axe-cost').innerText = Math.floor(costs.axe);
+        
+        document.getElementById('pick-lvl').innerText = inventory.pickaxe;
+        document.getElementById('pick-cost').innerText = Math.floor(costs.pick.w) + " B / " + Math.floor(costs.pick.s) + " P";
+
+        document.getElementById('sword-lvl').innerText = inventory.sword;
+        document.getElementById('sword-cost').innerText = Math.floor(costs.sword.w) + " B / " + Math.floor(costs.sword.r) + " R";
+        
+        // Boutons grisés si pas assez de ressources
+        document.getElementById('btn-axe').disabled = inventory.wood < costs.axe;
+        document.getElementById('btn-pick').disabled = inventory.wood < costs.pick.w || inventory.stone < costs.pick.s;
+        document.getElementById('btn-sword').disabled = inventory.wood < costs.sword.w || inventory.ruby < costs.sword.r;
+    }
+    
+    // Redimensionnement auto
+    window.addEventListener('resize', resize);
+    function resize(){ 
+        if(window.innerHeight > window.innerWidth) rotateScreen.style.display='flex'; 
+        else rotateScreen.style.display='none';
+    }
+
+    init();
 </script>
 </body>
 </html>
