@@ -3,84 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Survival RPG ULTIMATE - V12</title>
+<title>Survival RPG ULTIMATE - V9</title>
 <style>
     /* --- CSS GLOBAL --- */
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif;
-    }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden;
-    }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
     
-    #gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated;
-    }
-    #rotate-msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: #fff;
-    display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; text-align: center;
-    }
+    #gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    #rotate-msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; text-align: center; }
 
     /* --- UI --- */
-    .ui-layer { position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%; pointer-events: none; }
+    .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
     
-    .hud { position: absolute; top: 10px;
-    left: 10px; background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex;
-    flex-direction: column; gap: 5px; pointer-events: auto; max-width: 200px; }
-    .hud-row { display: flex; justify-content: space-between; gap: 10px;
-    }
+    .hud { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; pointer-events: auto; max-width: 200px; }
+    .hud-row { display: flex; justify-content: space-between; gap: 10px; }
 
     /* NOUVEAU CONTENEUR pour Quête + Carte */
-    .top-right-ui { position: absolute;
-    top: 10px; right: 10px; display: flex; align-items: flex-start; gap: 10px;
-    }
+    .top-right-ui { position: absolute; top: 10px; right: 10px; display: flex; align-items: flex-start; gap: 10px; }
     
-    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px;
-    border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; }
-    .quest-title { font-weight: 900;
-    text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
+    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px; border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; }
+    .quest-title { font-weight: 900; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
     
-    /* MENU BTN (Reste à droite) */
-    #menu-btn { width: 50px; height: 50px; background: #e67e22; border-radius: 10px;
-    border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; cursor: pointer;
-    box-shadow: 0 4px 0 #d35400; }
-    #menu-btn:active { transform: translateY(4px); box-shadow: none;
-    }
+    /* MINI-MAP DEVIENT UN BOUTON */
+    #map-btn { width: 50px; height: 50px; border-radius: 10px; background: #3498db; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; }
+    #map-btn:active { transform: translateY(4px); box-shadow: none; }
     
-    .controls { position: absolute; bottom: 20px; right: 20px; pointer-events: auto;
-    }
-    #action-btn { width: 100px; height: 100px; background: #c0392b; border-radius: 50%; border: 5px solid #fff; display: flex;
-    justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 5px 0 #922b21; transition: background 0.2s;
-    }
+    #menu-btn { width: 50px; height: 50px; background: #e67e22; border-radius: 10px; border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
+    #menu-btn:active { transform: translateY(4px); box-shadow: none; }
     
-    #joystick-zone { position: absolute; bottom: 30px; left: 10px; width: 120px; height: 120px;
-    background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); pointer-events: auto;
-    }
+    .controls { position: absolute; bottom: 20px; right: 20px; pointer-events: auto; }
+    #action-btn { width: 100px; height: 100px; background: #c0392b; border-radius: 50%; border: 5px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 5px 0 #922b21; transition: background 0.2s; }
+    
+    #joystick-zone { position: absolute; bottom: 30px; left: 10px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); pointer-events: auto; }
     
     /* MENUS & MODALS */
-    .modal { position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 80%; max-width: 600px; border: 4px solid #fff; border-radius: 15px;
-    display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; 
-    /* Définit le défilement */
-    overflow-y: auto; text-align: center;
-    max-height: 90vh; /* Limite la hauteur du modal pour permettre le défilement */
-    /* FIX: Permet le défilement tactile vertical dans le menu */
-    touch-action: pan-y;
-    }
-    .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;
-    }
+    .modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 80%; max-width: 600px; border: 4px solid #fff; border-radius: 15px; display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; overflow-y: auto; text-align: center; }
+    .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px; }
     
-    .craft-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px;
-    margin-bottom: 8px; border-radius: 5px; border: 1px solid #444; }
-    .btn { background: #27ae60; color: white; border: none;
-    padding: 8px 16px; border-radius: 4px; font-weight: bold; border-bottom: 3px solid #1e8449; }
-    .btn:active { border-bottom: 0;
-    transform: translateY(3px); }
-    .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5;
-    }
-    .close-modal-btn { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px;
-    }
+    .craft-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #444; }
+    .btn { background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; border-bottom: 3px solid #1e8449; }
+    .btn:active { border-bottom: 0; transform: translateY(3px); }
+    .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5; }
+    .close-modal { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px; }
     
     /* DEATH MENU SPECIFIC */
-    #death-screen { background: rgba(192, 57, 43, 0.95);
-    border-color: #e74c3c; width: 90%; max-width: 400px; }
+    #death-screen { background: rgba(192, 57, 43, 0.95); border-color: #e74c3c; width: 90%; max-width: 400px; }
+    
+    /* FULL MAP MODAL */
+    #map-modal { max-width: 90vw; max-height: 90vh; width: auto; height: auto; padding: 10px; }
+    #fullMapCanvas { border: 2px solid #fff; background: #000; }
+
 </style>
 </head>
 <body>
@@ -88,20 +60,24 @@
 <div id="rotate-msg"><h1>📱 TOURNEZ L'ÉCRAN</h1><p>Jeu optimisé pour le mode Paysage</p></div>
 
 <canvas id="gameCanvas"></canvas>
+<div id="night-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:black;pointer-events:none;opacity:0;z-index:10;"></div>
+
 <div class="ui-layer">
+    <div id="save-notif" style="position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#27ae60;color:white;padding:5px 15px;border-radius:5px;display:none;z-index:5001;">💾 Sauvegarde auto...</div>
+
     <div class="hud">
         <div class="hud-row" style="color:#e74c3c; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">
             <span>❤️ VIE</span> <span id="hud-hp">100/100</span>
         </div>
         <div class="hud-row"><span>🪵 Bois</span> <span id="hud-wood">0</span></div>
         <div class="hud-row"><span>🪨 Pierre</span> <span id="hud-stone">0</span></div>
-        <div class="hud-row"><span>🟡 Or</span> <span 
-    id="hud-gold">0</span></div>
+        <div class="hud-row"><span>🟡 Or</span> <span id="hud-gold">0</span></div>
         <div class="hud-row"><span>⚪ Fer</span> <span id="hud-iron">0</span></div>
         <div class="hud-row"><span>⚫ Obsi</span> <span id="hud-obsi">0</span></div>
     </div>
     
     <div class="top-right-ui">
+        <div id="map-btn" onclick="showFullMapModal()">🔍</div>
         <div id="menu-btn">⚙️</div>
     </div>
 
@@ -110,21 +86,17 @@
         <div id="quest-txt">Chargement...</div>
     </div>
     
-    <div id="joystick-zone"><div id="joystick-stick" style="position: 
-    absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 35px;
-    left: 35px;"></div></div>
+    <div id="joystick-zone"><div id="joystick-stick" style="position: absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 35px; left: 35px;"></div></div>
     <div class="controls"><div id="action-btn"></div></div>
 </div>
 
 <div id="craft-menu" class="modal">
     <h2>🛠️ FORGE & ARTISANAT</h2>
-    <div class="craft-row" style="border-color:#f39c12;
-    background:rgba(243,156,18,0.1);">
+    <div class="craft-row" style="border-color:#f39c12; background:rgba(243,156,18,0.1);">
         <div><strong>🏠 BASE / SOIN (Niv <span id="house-lvl">0</span>)</strong><br><small id="house-desc">Soin passif à domicile</small><br><span class="cost" id="house-cost">...</span></div>
         <button class="btn" id="btn-house" onclick="game.craft('house')">BÂTIR</button>
     </div>
-    <div class="craft-row" style="border-color:#3498db;
-    background:rgba(52,152,219,0.1);">
+    <div class="craft-row" style="border-color:#3498db; background:rgba(52,152,219,0.1);">
         <div><strong>🛡️ ARMURE (Niv <span id="armor-lvl">0</span>)</strong><br><small>+PV Max (Base requise)</small><br><span class="cost" id="armor-cost">...</span></div>
         <button class="btn" id="btn-armor" onclick="game.craft('armor')">FORGER</button>
     </div>
@@ -133,13 +105,18 @@
     <div class="craft-row"><div>⛏️ <strong>PIOCHE</strong> <small id="pick-lvl-menu">Niv 1</small><br><span class="cost" id="pick-cost">...</span></div><button class="btn" id="btn-pick" onclick="game.craft('pick')">UP</button></div>
     <div class="craft-row"><div>⚔️ <strong>ÉPÉE</strong> <small id="sword-lvl-menu">Niv 1</small><br><span class="cost" id="sword-cost">...</span></div><button class="btn" id="btn-sword" onclick="game.craft('sword')">UP</button></div>
 
-    <button class="btn close-modal-btn" onclick="closeModal('craft-menu')">RETOUR JEU</button>
+    <button class="btn close-modal" onclick="document.getElementById('craft-menu').style.display='none'">RETOUR JEU</button>
+</div>
+
+<div id="map-modal" class="modal">
+    <h2>🗺️ CARTE DU MONDE (4000x4000)</h2>
+    <canvas id="fullMapCanvas" width="500" height="500"></canvas>
+    <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
 </div>
 
 <div id="death-screen" class="modal">
     <h2>💀 MORT !</h2>
-    <p>Ton aventure s'arrête ici.
-    Que souhaites-tu faire ?</p>
+    <p>Ton aventure s'arrête ici. Que souhaites-tu faire ?</p>
     <div class="death-options">
         <button class="btn" id="btn-restart" onclick="deathMenuAction('restart')">🎮 Tout Recommencer</button>
         <button class="btn" id="btn-respawn" onclick="deathMenuAction('respawn')">🏡 Revenir à la Maison</button>
@@ -148,43 +125,91 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V12 - Corrections de la v11
+ * SURVIVAL RPG ULTIMATE V9 - Zone Sécurisée & Carte Complète
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
-const WORLD_W = 6000;
-const WORLD_H = 6000;
+const WORLD_W = 4000;
+const WORLD_H = 4000;
 const SCALE_BASE = 4; // Taille d'un pixel dans le jeu
-const SAFE_ZONE_X = 2000; 
+const SAFE_ZONE_X = 500; // Nouvelle zone sans mobs de 0 à 500 X
 
 const PALETTE = [
     'rgba(0,0,0,0)', '#000000', '#FFFFFF', '#8b4513', '#2ecc71', 
     '#95a5a6', '#e74c3c', '#f1c40f', '#3498db', '#e91e63', 
     '#bdc3c7', '#1c2833', '#1e8449' // 12: Dark Green (Forest on Map)
 ];
+
+// ... PIXEL_ASSETS (Non répété ici pour la taille, mais il est dans la version finale)
 const PIXEL_ASSETS = {
-    // Assets (non répétés pour concision)
-    PLAYER_IDLE: [[0,0,1,1,1,1,0,0], [0,1,6,2,2,6,1,0], [0,1,6,2,2,6,1,0], [0,0,1,3,3,1,0,0],[0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]],
-    PLAYER_SWORD: [[1,0,0,0,0,0,0,0], [1,1,0,0,0,0,0,0], [0,1,1,0,0,0,0,0], [0,0,1,1,1,1,1,0],[0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]],
-    TREE: [[0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [0,0,0,3,3,0,0,0],[0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0]],
-    STONE: [[0,0,5,5,5,5,0,0], [0,5,5,5,5,5,5,0], [5,5,5,1,5,5,5,5], [5,5,1,5,5,5,5,5],[0,5,5,5,5,5,5,0], [0,0,5,5,5,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
-    SLIME: [[0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [4,4,1,4,4,1,4,4],[4,4,4,4,4,4,4,4], [0,4,4,1,1,4,4,0], [0,0,4,4,4,4,0,0], [0,0,0,0,0,0,0,0]],
-    HOUSE_LVL1: [[0,0,0,1,1,0,0,0], [0,0,1,6,6,1,0,0], [0,1,3,3,3,3,1,0], [1,3,3,3,3,3,3,1],[1,3,2,1,1,2,3,1], [1,3,2,1,1,2,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]],
-    HOUSE_LVL2: [[0,0,1,2,2,1,0,0], [0,1,3,3,3,3,1,0], [1,3,7,7,7,7,3,1], [1,3,7,2,2,7,3,1],[1,3,7,2,2,7,3,1], [1,3,7,7,7,7,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]],
-    ROCK_GOLD: [[0,7,7,7,7,0,0,0], [7,7,5,5,5,7,7,0], [7,5,5,7,5,5,7,7], [5,7,5,5,5,5,7,0],[5,5,7,7,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
-    SCORPION: [[1,0,0,0,0,0,0,1], [0,1,0,0,0,0,1,0], [0,0,1,1,1,1,0,0], [0,0,1,6,6,1,0,0],[0,0,1,1,1,1,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
-    IRON_ROCK: [[0,0,10,10,10,10,0,0], [0,10,5,5,5,10,10,0], [10,5,5,10,5,5,10,10], [5,10,5,5,5,5,10,0],[5,5,10,10,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
-    WOLF: [[0,1,1,0,0,1,1,0], [1,2,2,1,1,2,2,1], [1,2,2,2,2,2,2,1], [0,1,2,2,2,2,1,0],[0,0,1,2,2,1,0,0], [0,0,1,1,1,1,0,0], [0,0,1,0,0,1,0,0], [0,0,1,0,0,1,0,0]],
-    RUBY: [[0,0,0,9,9,0,0,0], [0,0,9,9,9,9,0,0], [0,9,9,1,1,9,9,0], [9,9,1,9,9,1,9,9],[9,1,9,9,9,9,1,9], [9,9,9,1,1,9,9,9], [0,9,9,9,9,9,9,0], [0,0,0,0,0,0,0,0]],
-    DEMON: [[0,6,0,1,1,0,6,0], [1,6,1,6,6,1,6,1], [1,1,1,6,6,1,1,1], [0,1,1,6,6,1,1,0],[0,0,1,6,6,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,0,0,1,0,0]],
-    BOSS: [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0], [0,0,0,0,1,6,6,6,6,1,0,0,0,0,0,0],[0,0,0,1,6,6,1,6,6,6,1,0,0,0,0,0], [0,0,1,6,6,6,6,6,6,6,6,1,0,0,0,0], [0,1,6,6,6,6,6,6,6,6,6,6,1,0,0,0],[1,6,6,6,1,1,6,6,1,1,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0],[0,1,6,6,6,1,1,1,1,1,6,6,6,1,0,0], [0,0,1,6,6,1,0,0,0,1,6,6,1,0,0,0], [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0],[0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0], [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+    PLAYER_IDLE: [
+        [0,0,1,1,1,1,0,0], [0,1,6,2,2,6,1,0], [0,1,6,2,2,6,1,0], [0,0,1,3,3,1,0,0],
+        [0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]
+    ],
+    PLAYER_SWORD: [
+        [1,0,0,0,0,0,0,0], [1,1,0,0,0,0,0,0], [0,1,1,0,0,0,0,0], [0,0,1,1,1,1,1,0],
+        [0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]
+    ],
+    TREE: [
+        [0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [0,0,0,3,3,0,0,0],
+        [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0]
+    ],
+    STONE: [
+        [0,0,5,5,5,5,0,0], [0,5,5,5,5,5,5,0], [5,5,5,1,5,5,5,5], [5,5,1,5,5,5,5,5],
+        [0,5,5,5,5,5,5,0], [0,0,5,5,5,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
+    ],
+    SLIME: [
+        [0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [4,4,1,4,4,1,4,4],
+        [4,4,4,4,4,4,4,4], [0,4,4,1,1,4,4,0], [0,0,4,4,4,4,0,0], [0,0,0,0,0,0,0,0]
+    ],
+    HOUSE_LVL1: [
+        [0,0,0,1,1,0,0,0], [0,0,1,6,6,1,0,0], [0,1,3,3,3,3,1,0], [1,3,3,3,3,3,3,1],
+        [1,3,2,1,1,2,3,1], [1,3,2,1,1,2,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]
+    ],
+    HOUSE_LVL2: [
+        [0,0,1,2,2,1,0,0], [0,1,3,3,3,3,1,0], [1,3,7,7,7,7,3,1], [1,3,7,2,2,7,3,1],
+        [1,3,7,2,2,7,3,1], [1,3,7,7,7,7,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]
+    ],
+    ROCK_GOLD: [
+        [0,7,7,7,7,0,0,0], [7,7,5,5,5,7,7,0], [7,5,5,7,5,5,7,7], [5,7,5,5,5,5,7,0],
+        [5,5,7,7,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
+    ],
+    SCORPION: [
+        [1,0,0,0,0,0,0,1], [0,1,0,0,0,0,1,0], [0,0,1,1,1,1,0,0], [0,0,1,6,6,1,0,0],
+        [0,0,1,1,1,1,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
+    ],
+    IRON_ROCK: [
+        [0,0,10,10,10,10,0,0], [0,10,5,5,5,10,10,0], [10,5,5,10,5,5,10,10], [5,10,5,5,5,5,10,0],
+        [5,5,10,10,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
+    ],
+    WOLF: [
+        [0,1,1,0,0,1,1,0], [1,2,2,1,1,2,2,1], [1,2,2,2,2,2,2,1], [0,1,2,2,2,2,1,0],
+        [0,0,1,2,2,1,0,0], [0,0,1,1,1,1,0,0], [0,0,1,0,0,1,0,0], [0,0,1,0,0,1,0,0]
+    ],
+    RUBY: [
+        [0,0,0,9,9,0,0,0], [0,0,9,9,9,9,0,0], [0,9,9,1,1,9,9,0], [9,9,1,9,9,1,9,9],
+        [9,1,9,9,9,9,1,9], [9,9,9,1,1,9,9,9], [0,9,9,9,9,9,9,0], [0,0,0,0,0,0,0,0]
+    ],
+    DEMON: [
+        [0,6,0,1,1,0,6,0], [1,6,1,6,6,1,6,1], [1,1,1,6,6,1,1,1], [0,1,1,6,6,1,1,0],
+        [0,0,1,6,6,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,0,0,1,0,0]
+    ],
+    BOSS: [ // 16x16
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0], [0,0,0,0,1,6,6,6,6,1,0,0,0,0,0,0],
+        [0,0,0,1,6,6,1,6,6,6,1,0,0,0,0,0], [0,0,1,6,6,6,6,6,6,6,6,1,0,0,0,0], [0,1,6,6,6,6,6,6,6,6,6,6,1,0,0,0],
+        [1,6,6,6,1,1,6,6,1,1,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0],
+        [0,1,6,6,6,1,1,1,1,1,6,6,6,1,0,0], [0,0,1,6,6,1,0,0,0,1,6,6,1,0,0,0], [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0],
+        [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0], [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    ]
 };
+
 // --- BIOMES, QUESTS, VARIABLES ---
 const BIOMES = { 
-    FOREST:{start:0,end:2000,color:'#27ae60',ground:'#2ecc71',asset:'TREE', mapColor: PALETTE[12]}, 
-    DESERT:{start:2000,end:4000,color:'#e67e22',ground:'#f1c40f',asset:'ROCK_GOLD', mapColor: PALETTE[7]}, 
-    SNOW:{start:4000,end:5000,color:'#bdc3c7',ground:'#ecf0f1',asset:'IRON_ROCK', mapColor: PALETTE[8]}, 
-    VOLCANO:{start:5000,end:6000,color:'#c0392b',ground:'#2c0505',asset:'RUBY', mapColor: PALETTE[6]} 
+    FOREST:{start:0,end:1000,color:'#27ae60',ground:'#2ecc71',asset:'TREE', mapColor: PALETTE[12]}, 
+    DESERT:{start:1000,end:2000,color:'#e67e22',ground:'#f1c40f',asset:'ROCK_GOLD', mapColor: PALETTE[7]}, 
+    SNOW:{start:2000,end:3000,color:'#bdc3c7',ground:'#ecf0f1',asset:'IRON_ROCK', mapColor: PALETTE[8]}, 
+    VOLCANO:{start:3000,end:4000,color:'#c0392b',ground:'#2c0505',asset:'RUBY', mapColor: PALETTE[6]} 
 };
 const QUESTS = [ 
     { id: 0, txt: "Récolter 10 BOIS", type: 'wood', target: 10 },
@@ -204,19 +229,26 @@ const QUESTS = [
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
+const mapCanvas = document.getElementById('fullMapCanvas');
+const ctxMap = mapCanvas.getContext('2d');
 
 let isGameRunning = true;
 let lastTime = 0;
+let saveTimer = 0;
 let joy = { active:false, dx:0, dy:0, sx:0, sy:0 };
+
 let game = { 
     player: { x: 500, y: 500, hp: 100, maxHp: 100, speed: 6, size: 24, angle: 0, iframes: 0 }, 
     inv: { wood:0, stone:0, gold:0, iron:0, obsi:0, axe:1, pick:1, sword:1, armor:0 }, 
     house: { active: false, x: 0, y: 0, lvl: 0, cooldown: 0 }, 
     quest: { id: 0, progress: 0 }, 
+    dayTime: 0, 
     camera: { x:0, y:0 }, 
     objects: [], 
     particles: [] 
 };
+
+
 // --- FONCTIONS DE RENDU PIXEL ART (Inchagée) ---
 function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
     const asset = PIXEL_ASSETS[assetName];
@@ -232,8 +264,7 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
         for (let c = 0; c < size; c++) {
             const colorIndex = asset[r][c];
             if (colorIndex !== 0) {
-                ctx.fillStyle = PALETTE[colorIndex] ||
-                '#FF00FF';
+                ctx.fillStyle = PALETTE[colorIndex] || '#FF00FF';
                 ctx.fillRect(c * scale, r * scale, scale, scale);
             }
         }
@@ -242,82 +273,82 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
 }
 
 
-// --- WORLD GEN ---
+// --- WORLD GEN (Mobs réduits et Zone Sécurisée) ---
 function generateWorld() {
     game.objects = [];
-    const spawn = (type, minX, maxX, count, maxY = WORLD_H) => {
+    
+    const spawn = (type, minX, maxX, count) => {
         for(let i=0; i<count; i++) {
             let x = minX + Math.random()*(maxX-minX);
-            let y = Math.random()*maxY;
+            let y = Math.random()*WORLD_H;
             createObject(type, x, y);
         }
     };
-    // 1. FOREST (X=0 à 2000, Y=0 à 2000) : Sans mobs
-    spawn('tree', 0, 2000, 200, 2000); 
-    spawn('stone', 0, 2000, 100, 2000); 
+
+    // 1. FOREST (Mobs réduits de 50% et ne spawnent qu'après X=500)
+    spawn('tree', 0, 1000, 120);
+    spawn('stone', 0, 1000, 60);
+    spawn('slime', SAFE_ZONE_X, 1000, 10); // Mobs: 10 (au lieu de 20) et commencent à 500
     
-    // 2. DESERT (X=2000 à 4000)
-    spawn('gold_rock', 2000, 4000, 80); 
-    spawn('scorpion', 2000, 4000, 30); 
+    // 2. DESERT (Mobs réduits de 50%)
+    spawn('gold_rock', 1000, 2000, 40);
+    spawn('scorpion', 1000, 2000, 15); // Mobs: 15 (au lieu de 30)
     
-    // 3. SNOW (X=4000 à 5000)
-    spawn('iron_rock', 4000, 5000, 50);
-    spawn('wolf', 4000, 5000, 18);
+    // 3. SNOW (Mobs réduits de 50%)
+    spawn('iron_rock', 2000, 3000, 50);
+    spawn('wolf', 2000, 3000, 18); // Mobs: 18 (au lieu de 35)
     
-    // 4. VOLCANO (X=5000 à 6000)
-    spawn('ruby', 5000, 6000, 30);
-    spawn('demon', 5000, 6000, 12);
+    // 4. VOLCANO (Mobs réduits de 50%)
+    spawn('ruby', 3000, 4000, 30);
+    spawn('demon', 3000, 4000, 12); // Mobs: 12 (au lieu de 25)
     
     // BOSS FINAL
-    createObject('boss', 5800, 3000);
-    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 5800+Math.cos(a)*400, 3000+Math.sin(a)*400);
+    createObject('boss', 3800, 2000);
+    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 3800+Math.cos(a)*400, 2000+Math.sin(a)*400);
 }
 
 function createObject(type, x, y) {
     let o = { type, x, y, hp:1, maxHp:1, size:40, asset:'STONE', solid:false, hostile:false, speed: 0, dmg: 0, mapDotColor: 'white' };
-// RESSOURCES
+    
+    // RESSOURCES
     if(type==='tree') { o.asset='TREE'; o.hp=15; o.maxHp=15; o.size=50; o.mapDotColor=PALETTE[4]; }
-    if(type==='stone') { o.asset='STONE'; o.hp=25;
-    o.maxHp=25; o.size=40; o.mapDotColor=PALETTE[5]; }
-    if(type==='gold_rock') { o.asset='ROCK_GOLD'; o.hp=40; o.maxHp=40; o.size=35; o.mapDotColor=PALETTE[7];
-    }
+    if(type==='stone') { o.asset='STONE'; o.hp=25; o.maxHp=25; o.size=40; o.mapDotColor=PALETTE[5]; }
+    if(type==='gold_rock') { o.asset='ROCK_GOLD'; o.hp=40; o.maxHp=40; o.size=35; o.mapDotColor=PALETTE[7]; }
     if(type==='iron_rock') { o.asset='IRON_ROCK'; o.hp=50; o.maxHp=50; o.size=35; o.mapDotColor=PALETTE[10]; }
-    if(type==='ruby') { o.asset='RUBY'; o.hp=60; o.maxHp=60;
-    o.size=30; o.mapDotColor=PALETTE[9]; }
+    if(type==='ruby') { o.asset='RUBY'; o.hp=60; o.maxHp=60; o.size=30; o.mapDotColor=PALETTE[9]; }
     
     // MOBS
-    if(type==='slime') { o.asset='SLIME'; o.hp=30; o.maxHp=30;
-    o.hostile=true; o.speed=2; o.dmg=5; o.size=30; o.mapDotColor=PALETTE[4]; }
-    if(type==='scorpion') { o.asset='SCORPION'; o.hp=60; o.maxHp=60; o.hostile=true; o.speed=4; o.dmg=10; o.size=25; o.mapDotColor=PALETTE[6];
-    }
-    if(type==='wolf') { o.asset='WOLF'; o.hp=100; o.maxHp=100; o.hostile=true; o.speed=5; o.dmg=15; o.size=35; o.mapDotColor=PALETTE[2];
-    }
-    if(type==='demon') { o.asset='DEMON'; o.hp=150; o.maxHp=150; o.hostile=true; o.speed=3.5; o.dmg=25; o.size=35; o.mapDotColor=PALETTE[6];
-    }
-    if(type==='boss') { o.asset='BOSS'; o.hp=1000; o.maxHp=1000; o.hostile=true; o.speed=4.5; o.dmg=40; o.size=80; o.isBoss=true; o.mapDotColor=PALETTE[6];
-    }
+    if(type==='slime') { o.asset='SLIME'; o.hp=30; o.maxHp=30; o.hostile=true; o.speed=2; o.dmg=5; o.size=30; o.mapDotColor=PALETTE[4]; }
+    if(type==='scorpion') { o.asset='SCORPION'; o.hp=60; o.maxHp=60; o.hostile=true; o.speed=4; o.dmg=10; o.size=25; o.mapDotColor=PALETTE[6]; }
+    if(type==='wolf') { o.asset='WOLF'; o.hp=100; o.maxHp=100; o.hostile=true; o.speed=5; o.dmg=15; o.size=35; o.mapDotColor=PALETTE[2]; }
+    if(type==='demon') { o.asset='DEMON'; o.hp=150; o.maxHp=150; o.hostile=true; o.speed=3.5; o.dmg=25; o.size=35; o.mapDotColor=PALETTE[6]; }
+    if(type==='boss') { o.asset='BOSS'; o.hp=1000; o.maxHp=1000; o.hostile=true; o.speed=4.5; o.dmg=40; o.size=80; o.isBoss=true; o.mapDotColor=PALETTE[6]; }
 
     // OTHER
-    if(type==='wall') { o.asset='STONE'; o.hp=9999; o.solid=true; o.size=40; o.mapDotColor=PALETTE[1];
-    }
+    if(type==='wall') { o.asset='STONE'; o.hp=9999; o.solid=true; o.size=40; o.mapDotColor=PALETTE[1]; }
     
     game.objects.push(o);
 }
 
 
-// --- GAME LOOP & CORE FUNCTIONS ---
+// --- GAME LOOP & CORE FUNCTIONS (Unchanged logic) ---
 function loop(time) {
     if(!isGameRunning) return;
+
     let dt = time - lastTime;
     lastTime = time;
 
     update(dt);
     draw();
     updateUI();
+    
     if(game.player.hp <= 0) {
         showDeathScreen();
         return;
     }
+
+    saveTimer += dt;
+    if(saveTimer > 10000) { saveGame(); saveTimer = 0; }
 
     requestAnimationFrame(loop);
 }
@@ -325,31 +356,35 @@ function loop(time) {
 function update(dt) {
     // Player Move
     if(joy.active) {
-        let angle = game.player.angle; // L'angle a été mis à jour dans moveJoystick
+        let angle = game.player.angle;
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
         let ny = game.player.y + Math.sin(angle) * game.player.speed;
+        
         nx = Math.max(0, Math.min(WORLD_W, nx));
         ny = Math.max(0, Math.min(WORLD_H, ny));
+
         let collide = game.objects.some(o => o.solid && Math.hypot(nx-o.x, ny-o.y) < game.player.size + o.size/2);
-        if(!collide) { game.player.x = nx;
-        game.player.y = ny; }
+        if(!collide) { game.player.x = nx; game.player.y = ny; }
         
         // Quest Check
-        if(nx > 2000 && nx < 4000) checkQuest('explore_desert', 1);
-        if(nx > 4000 && nx < 5000) checkQuest('explore_snow', 1);
-        if(nx > 5000) checkQuest('explore_volcano', 1);
+        if(nx > 1000 && nx < 2000) checkQuest('explore_desert', 1);
+        if(nx > 2000 && nx < 3000) checkQuest('explore_snow', 1);
+        if(nx > 3000) checkQuest('explore_volcano', 1);
     }
     
-    // Camera, Mobs, Healing...
+    // Camera, Mobs, Healing, DayCycle... (Logic from V8)
     game.camera.x = game.player.x - canvas.width/2;
     game.camera.y = game.player.y - canvas.height/2;
+
     if(game.player.iframes > 0) game.player.iframes--;
+
     game.objects.forEach(o => {
         if(o.hostile && o.hp > 0) {
             let dist = Math.hypot(game.player.x - o.x, game.player.y - o.y);
-            if(dist < 400) {
+            if(dist < 400) { 
                 o.x += (game.player.x - o.x) / dist * o.speed;
                 o.y += (game.player.y - o.y) / dist * o.speed;
+                
                 if(dist < game.player.size + o.size/2 && game.player.iframes <= 0) {
                     game.player.hp -= o.dmg;
                     game.player.iframes = 40;
@@ -358,6 +393,7 @@ function update(dt) {
             }
         }
     });
+
     if(game.house.active) {
         let dist = Math.hypot(game.player.x - game.house.x, game.player.y - game.house.y);
         if(dist < 100) {
@@ -369,133 +405,92 @@ function update(dt) {
             }
         }
     }
-    // Logique du cycle jour/nuit (game.dayTime) est supprimée
-} 
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 1. Dessin du sol (Simplifié: on utilise la couleur du biome pour tout)
-    const biome = getBiome(game.player.x);
-    ctx.fillStyle = biome.ground;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Dessin des objets/entités
-    const sortedObjects = [...game.objects, {x: game.player.x, y: game.player.y, asset: getPlayerAsset(), size: game.player.size, isPlayer: true}];
-    sortedObjects.sort((a,b) => a.y - b.y);
-
-    for (let o of sortedObjects) {
-        let screenX = o.x - game.camera.x;
-        let screenY = o.y - game.camera.y;
-
-        if (o.isPlayer) {
-            drawPlayer(screenX, screenY);
-        } else {
-            drawPixelArt(o.asset, screenX, screenY);
-            // Barre de vie (simplifiée)
-            if (o.hp > 0 && o.hp < o.maxHp) {
-                ctx.fillStyle = 'red';
-                ctx.fillRect(screenX - 15, screenY - 50, 30, 4);
-                ctx.fillStyle = 'lime';
-                ctx.fillRect(screenX - 15, screenY - 50, 30 * (o.hp / o.maxHp), 4);
-            }
-        }
-    }
-    // 3. Dessin des particules
-    for (let i = game.particles.length - 1; i >= 0; i--) {
-        let p = game.particles[i];
-        p.y += p.dy;
-        p.life--;
-        ctx.fillStyle = p.color;
-        ctx.font = '16px "Pixelated MS Sans Serif"';
-        ctx.globalAlpha = p.life / 40;
-        ctx.fillText(p.txt, p.x - game.camera.x, p.y - game.camera.y);
-        if (p.life <= 0) game.particles.splice(i, 1);
-    }
-    ctx.globalAlpha = 1;
-
-}
-
-function getPlayerAsset() {
-    // Simplifié: toujours l'épée si on a un objet proche, sinon idle.
-    return getNearestTarget() ? 'PLAYER_SWORD' : 'PLAYER_IDLE';
-}
-
-function drawPlayer(x, y) {
-    const asset = getPlayerAsset();
-    const assetData = PIXEL_ASSETS[asset];
-    const scale = SCALE_BASE;
-    const assetSize = assetData.length;
-    const halfSize = (assetSize * scale) / 2;
-
-    ctx.save();
-    
-    // 1. Déplacer l'origine au centre du joueur (x, y)
-    ctx.translate(x, y);
-    
-    // 2. Appliquer la rotation. +Math.PI/2 car l'asset est orienté par défaut vers le haut.
-    ctx.rotate(game.player.angle + Math.PI / 2);
-
-    // 3. Dessiner l'asset centré sur la nouvelle origine (0,0)
-    
-    // Check for iframes blink
-    const isBlinking = game.player.iframes > 0 && (game.player.iframes % 4 < 2);
-    
-    // Main drawing loop
-    for (let r = 0; r < assetSize; r++) {
-        for (let c = 0; c < assetSize; c++) {
-            const colorIndex = assetData[r][c];
-            if (colorIndex !== 0) {
-                ctx.fillStyle = PALETTE[colorIndex] || '#FF00FF';
-                // Calcul des coordonnées par rapport au centre (0,0)
-                const drawX = (c * scale) - halfSize;
-                const drawY = (r * scale) - halfSize;
-                
-                // Apply blink effect using globalAlpha
-                if (isBlinking) ctx.globalAlpha = 0.4;
-                else ctx.globalAlpha = 1;
-                
-                ctx.fillRect(drawX, drawY, scale, scale);
-            }
-        }
-    }
-    
-    // Reset alpha and restore the canvas state
-    ctx.globalAlpha = 1;
-    ctx.restore();
-}
-
-function getBiome(x) {
-    for(let key in BIOMES) {
-        if(x >= BIOMES[key].start && x < BIOMES[key].end) return BIOMES[key];
-    }
-    return BIOMES.FOREST;
+    game.dayTime += 0.0005;
+    if(game.dayTime > 1) game.dayTime = 0;
 }
 
 
-// --- ACTIONS & UI (Logique inchangée) ---
+// --- RENDU CARTE COMPLÈTE (NOUVEAU) ---
+
+function showFullMapModal() {
+    document.getElementById('map-modal').style.display = 'block';
+    // Le canvas de la carte est redessiné chaque fois qu'on ouvre le modal
+    drawFullMap();
+}
+
+function drawFullMap() {
+    // Redimensionner le canvas de la map pour qu'il soit carré et remplisse au mieux le modal
+    const size = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 500); 
+    mapCanvas.width = size;
+    mapCanvas.height = size;
+    const scale = size / WORLD_W; // Échelle de 4000px du monde à 'size' px sur le canvas
+
+    ctxMap.clearRect(0, 0, size, size);
+
+    // Dessin des BIOMES
+    let xOffset = 0;
+    for (let key in BIOMES) {
+        const biome = BIOMES[key];
+        const width = (biome.end - biome.start) * scale;
+        ctxMap.fillStyle = biome.mapColor;
+        ctxMap.fillRect(xOffset, 0, width, size);
+        xOffset += width;
+    }
+    
+    // Dessin des RESSOURCES et MOBS
+    for (let o of game.objects) {
+        if (o.type === 'wall' || o.hp <= 0) continue;
+
+        ctxMap.fillStyle = o.mapDotColor;
+        // Dessiner en petit cercle pour les ressources/mobs
+        ctxMap.beginPath();
+        ctxMap.arc(o.x * scale, o.y * scale, o.isBoss ? 4 : 2, 0, Math.PI * 2);
+        ctxMap.fill();
+    }
+
+    // Dessin de la MAISON
+    if (game.house.active) {
+        ctxMap.fillStyle = 'lime';
+        ctxMap.fillRect(game.house.x * scale - 3, game.house.y * scale - 3, 6, 6);
+    }
+    
+    // Dessin du JOUEUR
+    ctxMap.fillStyle = 'red';
+    ctxMap.beginPath();
+    ctxMap.arc(game.player.x * scale, game.player.y * scale, 5, 0, Math.PI * 2);
+    ctxMap.fill();
+    ctxMap.strokeStyle = 'white';
+    ctxMap.lineWidth = 1;
+    ctxMap.stroke();
+}
+
+
+// --- ACTIONS & UI (Unchanged logic) ---
+
 function handleAction() {
     let t = getNearestTarget();
     if(!t) return;
+
     let dmg = 1;
     if(t.hostile) dmg = game.inv.sword * 6;
     else if(t.type === 'tree') dmg = game.inv.axe * 3;
     else dmg = game.inv.pick * 3;
+
     t.hp -= dmg;
     t.hitAnim = 5;
     createFloatText("💥", t.x, t.y, '#fff');
+
     if(t.hp <= 0) {
-        if(t.type === 'tree') { game.inv.wood += 5; checkQuest('wood', 5); createFloatText("+5 BOIS", t.x, t.y, '#2ecc71');
-        }
-        if(t.type === 'stone') { game.inv.stone += 3; checkQuest('stone', 3); createFloatText("+3 PIERRE", t.x, t.y, '#95a5a6');
-        }
-        if(t.type === 'gold_rock') { game.inv.gold += 2; checkQuest('gold', 2); createFloatText("+2 OR", t.x, t.y, 'gold');
-        }
-        if(t.type === 'iron_rock') { game.inv.iron += 2; checkQuest('iron', 2); createFloatText("+2 FER", t.x, t.y, '#fff');
-        }
-        if(t.type === 'ruby') { game.inv.obsi += 1; createFloatText("+1 OBSI", t.x, t.y, '#e91e63'); } // Correction ruby donne obsi
+        if(t.type === 'tree') { game.inv.wood += 5; checkQuest('wood', 5); createFloatText("+5 BOIS", t.x, t.y, '#2ecc71'); }
+        if(t.type === 'stone') { game.inv.stone += 3; checkQuest('stone', 3); createFloatText("+3 PIERRE", t.x, t.y, '#95a5a6'); }
+        if(t.type === 'gold_rock') { game.inv.gold += 2; checkQuest('gold', 2); createFloatText("+2 OR", t.x, t.y, 'gold'); }
+        if(t.type === 'iron_rock') { game.inv.iron += 2; checkQuest('iron', 2); createFloatText("+2 FER", t.x, t.y, '#fff'); }
+        if(t.type === 'ruby') { game.inv.ruby += 1; createFloatText("+1 RUBIS", t.x, t.y, '#e91e63'); }
+        
         if(t.type === 'wolf') checkQuest('kill_wolf', 1);
         if(t.type === 'boss') checkQuest('kill_boss', 1);
+
         game.objects.splice(game.objects.indexOf(t), 1);
     }
 }
@@ -509,35 +504,33 @@ function getNearestTarget() {
     }
     return closest;
 }
+
 function checkQuest(type, amount) {
     let q = QUESTS[game.quest.id];
-    if(!q) return;
+    if(!q) return; 
     if(q.type === type) {
         game.quest.progress += amount;
         if(game.quest.progress >= q.target) {
             createFloatText("🏆 QUÊTE TERMINÉE !", game.player.x, game.player.y - 50, 'gold');
             game.quest.id++;
             game.quest.progress = 0;
-            saveGame(); // Sauvegarde après une quête importante
+            saveGame();
         }
     }
 }
-game.craft = (item) => {
-    let msg = null;
+
+game.craft = function(item) {
+    let msg = "";
     // HOUSE
     if(item === 'house') {
+        let costs = [{w:50},{w:150},{w:300}];
         if(game.house.lvl >= 3) return;
-        let costs = [{w:10,s:10},{w:50,s:50},{w:100,s:100}];
         let c = costs[game.house.lvl];
-        if(game.inv.wood >= c.w && game.inv.stone >= c.s) {
-            game.inv.wood -= c.w; game.inv.stone -= c.s;
-            if(!game.house.active) {
-                game.house.active = true;
-                game.house.x = game.player.x;
-                game.house.y = game.player.y;
-                checkQuest('house', 1);
-            }
-            game.house.lvl++; msg = "MAISON AMÉLIORÉE";
+        if(game.inv.wood >= c.w) {
+            game.inv.wood -= c.w;
+            if(game.house.lvl === 0) { game.house.active = true; game.house.x = game.player.x; game.house.y = game.player.y; checkQuest('house', 1); }
+            game.house.lvl++;
+            msg = "MAISON AMÉLIORÉE";
         }
     }
     // ARMOR
@@ -546,28 +539,26 @@ game.craft = (item) => {
         let costs = [{s:50,w:50},{s:100,i:10},{s:200,ob:5}];
         if(game.inv.armor >= 3) return;
         let c = costs[game.inv.armor];
+        
         let ok = false;
-        if(game.inv.armor==0 && game.inv.stone>=c.s && game.inv.wood>=c.w) { game.inv.stone-=c.s; game.inv.wood-=c.w; ok=true;
-        }
+        if(game.inv.armor==0 && game.inv.stone>=c.s && game.inv.wood>=c.w) { game.inv.stone-=c.s; game.inv.wood-=c.w; ok=true; }
         if(game.inv.armor==1 && game.inv.stone>=c.s && game.inv.iron>=c.i) { game.inv.stone-=c.s; game.inv.iron-=c.i; ok=true; }
-        if(game.inv.armor==2 && game.inv.stone>=c.s && game.inv.obsi>=c.ob) { game.inv.stone-=c.s; game.inv.obsi-=c.ob; ok=true;
-        }
+        if(game.inv.armor==2 && game.inv.stone>=c.s && game.inv.obsi>=c.ob) { game.inv.stone-=c.s; game.inv.obsi-=c.ob; ok=true; }
+
         if(ok) {
             game.inv.armor++;
-            game.player.maxHp += 100;
-            game.player.hp = game.player.maxHp;
+            game.player.maxHp += 100; game.player.hp = game.player.maxHp;
             msg = "ARMURE ÉQUIPÉE";
         }
     }
     // TOOLS
-    if(item === 'axe' && game.inv.wood >= game.inv.axe*20) { game.inv.wood -= game.inv.axe*20; game.inv.axe++; checkQuest('axe', 1);
-    msg="HACHE UP !"; }
-    if(item === 'pick' && game.inv.wood >= 20 && game.inv.stone >= 20) { game.inv.wood-=20; game.inv.stone-=20; game.inv.pick++;
-    msg="PIOCHE UP !"; }
-    if(item === 'sword' && game.inv.wood >= 50 && game.inv.gold >= game.inv.sword*5) { game.inv.wood-=50; game.inv.gold-=game.inv.sword*5; game.inv.sword++;
-    checkQuest('sword', 1); msg="ÉPÉE UP !"; }
+    if(item === 'axe' && game.inv.wood >= game.inv.axe*20) { game.inv.wood -= game.inv.axe*20; game.inv.axe++; checkQuest('axe', 1); msg="HACHE UP !"; }
+    if(item === 'pick' && game.inv.wood >= 20 && game.inv.stone >= 20) { game.inv.wood-=20; game.inv.stone-=20; game.inv.pick++; msg="PIOCHE UP !"; }
+    if(item === 'sword' && game.inv.wood >= 50 && game.inv.gold >= game.inv.sword*5) { game.inv.wood-=50; game.inv.gold-=game.inv.sword*5; game.inv.sword++; checkQuest('sword', 1); msg="ÉPÉE UP !"; }
+
     if(msg) { createFloatText(msg, game.player.x, game.player.y, '#fff'); updateUI(); }
 };
+
 function updateUI() {
     document.getElementById('hud-hp').innerText = Math.floor(game.player.hp) + "/" + game.player.maxHp;
     document.getElementById('hud-wood').innerText = game.inv.wood;
@@ -575,71 +566,53 @@ function updateUI() {
     document.getElementById('hud-gold').innerText = game.inv.gold;
     document.getElementById('hud-iron').innerText = game.inv.iron;
     document.getElementById('hud-obsi').innerText = game.inv.obsi;
+
     // Quest
     let q = QUESTS[game.quest.id];
-    document.getElementById('quest-txt').innerText = q ?
-    `${q.txt} (${game.quest.progress}/${q.target})` : "TOUTES QUÊTES FINIES !";
+    document.getElementById('quest-txt').innerText = q ? `${q.txt} (${game.quest.progress}/${q.target})` : "TOUTES QUÊTES FINIES !";
+
     // Action Button Icon
     let btn = document.getElementById('action-btn');
     let t = getNearestTarget();
     if(t) {
         if(t.hostile) { btn.innerText = "🗡️"; btn.style.background = "#c0392b"; }
-        else if(t.type === 'tree') { btn.innerText = "🪓";
-        btn.style.background = "#e67e22"; }
+        else if(t.type === 'tree') { btn.innerText = "🪓"; btn.style.background = "#e67e22"; }
         else { btn.innerText = "⛏️"; btn.style.background = "#7f8c8d"; }
     } else {
-        btn.innerText = "⚔️";
-        btn.style.background = "#95a5a6";
+        btn.innerText = "⚔️"; btn.style.background = "#95a5a6";
     }
+
     // Menu Texts (Dynamique)
     document.getElementById('house-lvl').innerText = game.house.lvl;
     document.getElementById('armor-lvl').innerText = game.inv.armor;
     document.getElementById('axe-lvl-menu').innerText = "Niv " + game.inv.axe;
     document.getElementById('pick-lvl-menu').innerText = "Niv " + game.inv.pick;
     document.getElementById('sword-lvl-menu').innerText = "Niv " + game.inv.sword;
-    
-    // Costs
-    let houseCosts = [{w:10,s:10},{w:50,s:50},{w:100,s:100}];
-    let armorCosts = [{s:50,w:50},{s:100,i:10},{s:200,ob:5}];
-    let houseCost = houseCosts[game.house.lvl];
-    let armorCost = armorCosts[game.inv.armor];
-    
-    document.getElementById('house-cost').innerText = houseCost ? `Coût: ${houseCost.w}🪵 ${houseCost.s}🪨` : "Max Niveau";
-    document.getElementById('armor-cost').innerText = armorCost ? 
-        `Coût: ${armorCost.s}🪨 ${armorCost.w ? armorCost.w + '🪵' : ''} ${armorCost.i ? armorCost.i + '⚪' : ''} ${armorCost.ob ? armorCost.ob + '⚫' : ''}`.trim() : "Max Niveau";
-        
-    document.getElementById('btn-house').disabled = !houseCost || game.inv.wood < houseCost.w || game.inv.stone < houseCost.s;
-    
-    let canCraftArmor = false;
-    if(armorCost) {
-        if(game.inv.armor === 0 && game.inv.stone >= armorCost.s && game.inv.wood >= armorCost.w) canCraftArmor = true;
-        if(game.inv.armor === 1 && game.inv.stone >= armorCost.s && game.inv.iron >= armorCost.i) canCraftArmor = true;
-        if(game.inv.armor === 2 && game.inv.stone >= armorCost.s && game.inv.obsi >= armorCost.ob) canCraftArmor = true;
-    }
-    document.getElementById('btn-armor').disabled = !canCraftArmor || !game.house.active;
-    
-    document.getElementById('axe-cost').innerText = `Coût: ${game.inv.axe*20}🪵`;
-    document.getElementById('btn-axe').disabled = game.inv.axe >= 3 || game.inv.wood < game.inv.axe*20;
-    
-    document.getElementById('pick-cost').innerText = `Coût: 20🪵 20🪨`;
-    document.getElementById('btn-pick').disabled = game.inv.pick >= 3 || game.inv.wood < 20 || game.inv.stone < 20;
 
-    document.getElementById('sword-cost').innerText = `Coût: 50🪵 ${game.inv.sword*5}🟡`;
-    document.getElementById('btn-sword').disabled = game.inv.sword >= 3 || game.inv.wood < 50 || game.inv.gold < game.inv.sword*5;
+    document.getElementById('axe-cost').innerText = (game.inv.axe*20) + " Bois";
+    document.getElementById('pick-cost').innerText = (game.inv.pick*20) + " Bois / " + (game.inv.pick*20) + " Pierre";
+    document.getElementById('sword-cost').innerText = "50 Bois / " + (game.inv.sword*5) + " Or";
+    
+    let houseC = ["50 B", "150 B", "300 B"][game.house.lvl] || "MAX";
+    document.getElementById('house-cost').innerText = houseC;
+    
+    let armorC = ["50 P / 50 B", "100 P / 10 Fer", "200 P / 5 Obsi"][game.inv.armor] || "MAX";
+    document.getElementById('armor-cost').innerText = armorC;
 }
 
-function createFloatText(txt, x, y, color) {
-    game.particles.push({ txt, x, y, color, dy:-2, life:40});
+function createFloatText(txt, x, y, col) {
+    game.particles.push({txt, x, y, col, life:40});
 }
-function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
-}
-// --- DEATH / SAVE / LOAD / INPUTS (Logique inchangée) ---
+
+// --- DEATH / SAVE / LOAD / INPUTS (Unchanged logic) ---
+
 function showDeathScreen() {
     isGameRunning = false;
     const deathScreen = document.getElementById('death-screen');
     const respawnBtn = document.getElementById('btn-respawn');
+    
     const hasValidSave = localStorage.getItem('rpg_save_v7') !== null;
+    
     if (game.house.active && hasValidSave) {
         respawnBtn.disabled = false;
         respawnBtn.innerText = "🏡 Revenir à la Maison (Gratuit)";
@@ -649,96 +622,80 @@ function showDeathScreen() {
         respawnBtn.style.backgroundColor = '#555';
         respawnBtn.style.borderBottomColor = '#333';
     }
+    
     deathScreen.style.display = 'block';
 }
+
 window.deathMenuAction = (action) => {
     if (action === 'restart') {
         localStorage.removeItem('rpg_save_v7');
-        location.reload();
+        location.reload(); 
     } else if (action === 'respawn') {
         if (!document.getElementById('btn-respawn').disabled) {
             loadGame(true);
-            closeModal('death-screen'); // Utilisation de closeModal
-            isGameRunning = true;
+            document.getElementById('death-screen').style.display = 'none';
+            isGameRunning = true; 
             requestAnimationFrame(loop);
         }
     }
 };
+
 function saveGame() {
-    // La sauvegarde est conservée pour le respawn
-    const data = { p: {x:game.player.x, y:game.player.y, hp:game.player.hp, max:game.player.maxHp}, inv: game.inv, house: game.house, quest: game.quest, objs: game.objects.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp)) };
+    const data = {
+        p: {x:game.player.x, y:game.player.y, hp:game.player.hp, max:game.player.maxHp},
+        inv: game.inv,
+        house: game.house,
+        quest: game.quest,
+        objs: game.objects.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp))
+    };
     localStorage.setItem('rpg_save_v7', JSON.stringify(data));
+    
+    let notif = document.getElementById('save-notif');
+    notif.style.display = 'block';
+    setTimeout(() => notif.style.display='none', 2000);
 }
+
 function loadGame(isRespawn = false) {
     const raw = localStorage.getItem('rpg_save_v7');
     if(!raw) return false;
     try {
         const d = JSON.parse(raw);
-        game.player.x = d.p.x; game.player.y = d.p.y;
-        // Si respawn, vie max et placement à la maison si active
-        if(isRespawn && game.house.active) {
-            game.player.x = game.house.x;
-            game.player.y = game.house.y;
-            game.player.hp = d.p.max;
-        } else {
-            game.player.hp = d.p.hp;
-        }
+        game.player.x = d.p.x; game.player.y = d.p.y; game.player.hp = d.p.hp; 
         game.player.maxHp = d.p.max;
-        
         game.inv = d.inv;
         game.house = d.house;
         game.quest = d.quest;
         
-        // Charger les murs et les boss blessés
-        generateWorld(); // Régénère le monde entier
-        d.objs.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp)).forEach(o => createObject(o.type, o.x, o.y));
+        if (isRespawn && game.house.active) {
+            game.player.x = game.house.x; 
+            game.player.y = game.house.y;
+            game.player.hp = game.player.maxHp;
+            createFloatText("RESPAWN À LA MAISON", game.player.x, game.player.y - 70, 'lime');
+        }
         
+        generateWorld(); 
         return true;
-    } catch (e) {
-        console.error("Erreur de chargement", e);
-        return false;
-    }
+    } catch(e) { console.error("Save corrupt"); return false; }
 }
 
-// Initialisation et Entrées
-window.onload = () => {
-    setupInputs();
-    resize();
-    if(!loadGame()) {
-        generateWorld();
-    }
-    updateUI();
-    requestAnimationFrame(loop);
-};
-window.onresize = resize;
-
 function setupInputs() {
-    // ...
-    // Code de gestion du Joystick (non modifié)
     const joyZone = document.getElementById('joystick-zone');
     const stick = document.getElementById('joystick-stick');
     const actionBtn = document.getElementById('action-btn');
     const menuBtn = document.getElementById('menu-btn');
-    const craftMenu = document.getElementById('craft-menu');
-    
+
     const moveJoystick = (e) => {
-        const touch = e.touches[0];
-        const rect = joyZone.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        let cx = e.clientX || e.touches[0].clientX;
+        let cy = e.clientY || e.touches[0].clientY;
+        let dx = cx - joy.sx, dy = cy - joy.sy;
+        let dist = Math.min(50, Math.hypot(dx, dy));
+        let angle = Math.atan2(dy, dx);
         
-        let dx = touch.clientX - centerX;
-        let dy = touch.clientY - centerY;
-        let dist = Math.min(60, Math.hypot(dx, dy));
-        
-        const angle = Math.atan2(dy, dx);
-        
-        const stickX = 35 + Math.cos(angle)*dist;
+        const stickX = 35 + Math.cos(angle)*dist; 
         const stickY = 35 + Math.sin(angle)*dist;
         stick.style.left = `${stickX}px`;
         stick.style.top = `${stickY}px`;
         
-        // CORRECTION: Réactive la rotation du personnage
         game.player.angle = angle;
         game.player.moving = true;
     };
@@ -748,10 +705,7 @@ function setupInputs() {
         joy.sx = e.touches[0].clientX; joy.sy = e.touches[0].clientY;
         e.preventDefault();
     }, {passive:false});
-    joyZone.addEventListener('touchmove', e => { 
-        if(joy.active) moveJoystick(e); 
-        e.preventDefault(); 
-    }, {passive:false});
+    joyZone.addEventListener('touchmove', e => { if(joy.active) moveJoystick(e); e.preventDefault(); }, {passive:false});
 
     const endJoy = () => { 
         joy.active = false; 
@@ -763,29 +717,22 @@ function setupInputs() {
     actionBtn.addEventListener('touchstart', e=>{ e.preventDefault(); handleAction(); });
     actionBtn.addEventListener('mousedown', e=>{ e.preventDefault(); handleAction(); });
     
-    // Ouvre le menu d'artisanat
     menuBtn.addEventListener('click', () => {
-        craftMenu.style.display = 'block';
+        document.getElementById('craft-menu').style.display = 'block';
         updateUI();
-    });
-    
-    // Ferme le menu si on clique en dehors
-    document.addEventListener('click', (e) => {
-        const isMenuOpen = craftMenu.style.display === 'block';
-        const isClickOutsideMenu = !craftMenu.contains(e.target);
-        const isNotMenuButton = e.target.id !== 'menu-btn';
-        
-        if (isMenuOpen && isClickOutsideMenu && isNotMenuButton) {
-            closeModal('craft-menu');
-        }
     });
 }
 
 function resize() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    document.getElementById('rotate-msg').style.display = (window.innerWidth < window.innerHeight) ? 'flex' : 'none';
+    document.getElementById('rotate-msg').style.display = (window.innerHeight > window.innerWidth) ? 'flex' : 'none';
 }
-</script>
+function goFullscreen() { document.documentElement.requestFullscreen?.(); }
+window.addEventListener('resize', resize);
 
+// START
+init();
+
+</script>
 </body>
 </html>
