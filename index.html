@@ -6,11 +6,12 @@
 <title>Survival RPG ULTIMATE - V9</title>
 <style>
     /* --- CSS GLOBAL --- */
-    /* La propriété touch-action: none; sur '*' est conservée pour la zone de jeu mais est surchargée pour les modales */
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif; }
+    /* CORRECTION DÉFILEMENT : touch-action: none retiré de * pour permettre le scroll dans les menus */
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
     
-    #gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    /* touch-action: none appliqué ici pour empêcher le zoom et le défilement du fond de jeu */
+    #gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; } 
     #rotate-msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: #fff;
     display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; text-align: center;
     }
@@ -52,7 +53,7 @@
         position: absolute; top: 10px; right: 70px; /* Décalé à côté du menu */
         width: 50px;
         height: 50px; border-radius: 10px; background: #3498db; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; pointer-events: auto;
-        cursor: pointer; box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; 
+        box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; 
     }
     #map-btn:active { transform: translateY(4px); box-shadow: none;
     }
@@ -60,7 +61,7 @@
     #menu-btn { 
         position: absolute; top: 10px; right: 10px; /* Reste à droite */
         width: 50px; height: 50px; background: #e67e22; border-radius: 10px;
-        border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; cursor: pointer;
+        border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; 
         box-shadow: 0 4px 0 #d35400; 
     }
     #menu-btn:active { transform: translateY(4px); box-shadow: none;
@@ -72,16 +73,33 @@
     justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 5px 0 #922b21; transition: background 0.2s;
     }
     
-    #joystick-zone { position: absolute; bottom: 30px; left: 10px; width: 120px; height: 120px;
-    background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); pointer-events: auto;
+    #joystick-zone { 
+        position: absolute; bottom: 30px; left: 10px; width: 120px; height: 120px;
+        background: rgba(255,255,255,0.1); border-radius: 50%; 
+        border: 2px solid rgba(255,255,255,0.3); pointer-events: auto;
+        touch-action: none; /* Nécessaire pour empêcher le défilement/zoom lors de l'utilisation */
     }
     
     /* MENUS & MODALS */
-    .modal { position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 80%; max-width: 600px; border: 4px solid #fff; border-radius: 15px;
-    display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; overflow-y: auto; text-align: center;
-    touch-action: pan-y !important; /* FIX 1: Permet le défilement vertical sur les écrans tactiles */
+    .modal { 
+        position: absolute;
+        top: 50%; left: 50%; transform: translate(-50%, -50%); 
+        background: #2c3e50; width: 80%; max-width: 600px; 
+        border: 4px solid #fff; border-radius: 15px;
+        display: none; z-index: 5000; padding: 20px; color: #fff; 
+        pointer-events: auto; box-shadow: 0 0 50px #000; 
+        text-align: center;
     }
+
+    /* NOUVEAU CONTENEUR POUR LE DÉFILEMENT (Mise en place de la correction) */
+    .modal-content-scroller {
+        max-height: 70vh; /* Limite la hauteur du contenu */
+        overflow-y: auto; /* Permet le défilement */
+        touch-action: pan-y !important; /* Force le défilement vertical sur ce bloc */
+        padding-right: 15px; /* Pour gérer la barre de défilement */
+        margin-right: -15px; /* Pour centrer correctement */
+    }
+    
     .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;
     }
     
@@ -94,7 +112,7 @@
     .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5;
     }
     .close-modal { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px;
-    touch-action: manipulation !important; /* FIX 2: Assure la détection des tapotements pour la fermeture */
+    touch-action: manipulation !important; /* Assure la détection des tapotements pour la fermeture */
     }
     
     /* DEATH MENU SPECIFIC */
@@ -149,28 +167,28 @@
 
 <div id="craft-menu" class="modal">
     <h2>🛠️ FORGE & ARTISANAT</h2>
-    <div class="craft-row" style="border-color:#f39c12;
-    background:rgba(243,156,18,0.1);">
-        <div><strong>🏠 BASE / SOIN (Niv <span id="house-lvl">0</span>)</strong><br><small id="house-desc">Soin passif à domicile</small><br><span class="cost" id="house-cost">...</span></div>
-        <button class="btn" id="btn-house" onclick="game.craft('house')">BÂTIR</button>
+    <div class="modal-content-scroller"> <div class="craft-row" style="border-color:#f39c12;
+        background:rgba(243,156,18,0.1);">
+            <div><strong>🏠 BASE / SOIN (Niv <span id="house-lvl">0</span>)</strong><br><small id="house-desc">Soin passif à domicile</small><br><span class="cost" id="house-cost">...</span></div>
+            <button class="btn" id="btn-house" onclick="game.craft('house')">BÂTIR</button>
+        </div>
+        <div class="craft-row" style="border-color:#3498db;
+        background:rgba(52,152,219,0.1);">
+            <div><strong>🛡️ ARMURE (Niv <span id="armor-lvl">0</span>)</strong><br><small>+PV Max (Base requise)</small><br><span class="cost" id="armor-cost">...</span></div>
+            <button class="btn" id="btn-armor" onclick="game.craft('armor')">FORGER</button>
+        </div>
+        <h3>OUTILS</h3>
+        <div class="craft-row"><div>🪓 <strong>HACHE</strong> <small id="axe-lvl-menu">Niv 1</small><br><span class="cost" id="axe-cost">...</span></div><button class="btn" id="btn-axe" onclick="game.craft('axe')">UP</button></div>
+        <div class="craft-row"><div>⛏️ <strong>PIOCHE</strong> <small id="pick-lvl-menu">Niv 1</small><br><span class="cost" id="pick-cost">...</span></div><button class="btn" id="btn-pick" onclick="game.craft('pick')">UP</button></div>
+        <div class="craft-row"><div>⚔️ <strong>ÉPÉE</strong> <small id="sword-lvl-menu">Niv 1</small><br><span class="cost" id="sword-cost">...</span></div><button class="btn" id="btn-sword" onclick="game.craft('sword')">UP</button></div>
     </div>
-    <div class="craft-row" style="border-color:#3498db;
-    background:rgba(52,152,219,0.1);">
-        <div><strong>🛡️ ARMURE (Niv <span id="armor-lvl">0</span>)</strong><br><small>+PV Max (Base requise)</small><br><span class="cost" id="armor-cost">...</span></div>
-        <button class="btn" id="btn-armor" onclick="game.craft('armor')">FORGER</button>
-    </div>
-    <h3>OUTILS</h3>
-    <div class="craft-row"><div>🪓 <strong>HACHE</strong> <small id="axe-lvl-menu">Niv 1</small><br><span class="cost" id="axe-cost">...</span></div><button class="btn" id="btn-axe" onclick="game.craft('axe')">UP</button></div>
-    <div class="craft-row"><div>⛏️ <strong>PIOCHE</strong> <small id="pick-lvl-menu">Niv 1</small><br><span class="cost" id="pick-cost">...</span></div><button class="btn" id="btn-pick" onclick="game.craft('pick')">UP</button></div>
-    <div class="craft-row"><div>⚔️ <strong>ÉPÉE</strong> <small id="sword-lvl-menu">Niv 1</small><br><span class="cost" id="sword-cost">...</span></div><button class="btn" id="btn-sword" onclick="game.craft('sword')">UP</button></div>
-
     <button class="btn close-modal" onclick="document.getElementById('craft-menu').style.display='none'">RETOUR JEU</button>
 </div>
 
 <div id="map-modal" class="modal">
     <h2>🗺️ CARTE DU MONDE (4000x4000)</h2>
-    
-    <canvas id="fullMapCanvas" width="400" height="400"></canvas>
+    <div class="modal-content-scroller"> <canvas id="fullMapCanvas" width="400" height="400"></canvas>
+    </div>
     <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
 </div>
 
@@ -878,8 +896,8 @@ function initInputs() {
     };
     joyZone.addEventListener('touchend', endJoy);
     
+    // RETRAIT du mousedown pour le support PC, seul touchstart est conservé
     actionBtn.addEventListener('touchstart', e=>{ e.preventDefault(); handleAction(); });
-    actionBtn.addEventListener('mousedown', e=>{ e.preventDefault(); handleAction(); });
     
     menuBtn.addEventListener('click', () => {
         document.getElementById('craft-menu').style.display = 'block';
@@ -899,7 +917,7 @@ function init() {
     // 2. Load existing game or generate world
     if(!loadGame()) generateWorld();
     
-    // 3. Init Inputs (Touch & PC)
+    // 3. Init Inputs (Touch only)
     initInputs();
     
     // Force la mise à jour de l'UI
