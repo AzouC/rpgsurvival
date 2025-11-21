@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Survival RPG ULTIMATE - 10k Map</title>
+<title>Survival RPG ULTIMATE - 100k World</title>
 <style>
     /* --- CSS GLOBAL --- */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; font-family: 'Segoe UI', sans-serif; }
@@ -16,9 +16,19 @@
     .hud { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; pointer-events: auto; max-width: 200px; }
     .hud-row { display: flex; justify-content: space-between; gap: 10px; }
 
+    /* MINIMAP */
+    #minimap-container {
+        position: absolute; top: 10px; right: 10px;
+        border: 3px solid #fff; border-radius: 4px;
+        background: #000; display: none; 
+        pointer-events: auto;
+        z-index: 100;
+    }
+    #minimapCanvas { display: block; background: #000; }
+
     .top-right-ui { position: absolute; top: 10px; right: 10px; display: flex; align-items: flex-end; gap: 10px; flex-direction: column; pointer-events: none; }
     
-    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px; border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; margin-top: 10px; }
+    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px; border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; margin-top: 220px; /* Décalé sous la minimap */ }
     .quest-title { font-weight: 900; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
     
     .pc-controls-hint {
@@ -26,16 +36,6 @@
         color: rgba(255,255,255,0.5); font-size: 12px; text-align: right;
         pointer-events: none;
     }
-
-    /* MINIMAP */
-    #minimap-container {
-        position: absolute; top: 10px; right: 10px;
-        border: 3px solid #fff; border-radius: 4px;
-        background: #000; display: none; /* Caché par défaut */
-        pointer-events: auto;
-        z-index: 100;
-    }
-    #minimapCanvas { display: block; background: #000; }
 
     /* MENUS & MODALS */
     .modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 80%; max-width: 600px; border: 4px solid #fff; border-radius: 15px; display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; overflow-y: auto; text-align: center; }
@@ -47,10 +47,15 @@
     .btn:hover { background: #2ecc71; } 
     .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5; }
     
+    /* CONTROLS MENU (Touche ²) */
+    #controls-menu table { width: 100%; text-align: left; margin-top: 10px; border-collapse: collapse; }
+    #controls-menu td { padding: 8px; border-bottom: 1px solid #444; }
+    #controls-menu th { color: #f1c40f; padding: 10px; border-bottom: 2px solid #fff; }
+    #controls-menu kbd { background: #eee; color: #333; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; border-bottom: 2px solid #aaa; }
+
     /* ECRAN MORT */
     #death-screen { background: rgba(192, 57, 43, 0.95); border-color: #e74c3c; width: 90%; max-width: 400px; }
     .death-options { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-    .death-options button { width: 100%; font-size: 16px; padding: 12px; }
     #btn-respawn { background: #3498db; border-bottom-color: #2980b9; display: none; }
 
 </style>
@@ -70,7 +75,7 @@
         <div class="hud-row"><span>🟡 Or</span> <span id="hud-gold">0</span></div>
         <div class="hud-row"><span>⚪ Fer</span> <span id="hud-iron">0</span></div>
         <div class="hud-row"><span>⚫ Obsi</span> <span id="hud-obsi">0</span></div>
-        <div class="hud-row" style="margin-top:5px; color:#aaa; font-size:10px;">Biomes: Forêt, Désert, Neige, Volcan</div>
+        <div class="hud-row" style="margin-top:5px; color:#aaa; font-size:10px;">Map: 100k x 100k</div>
     </div>
     
     <div id="minimap-container">
@@ -86,14 +91,27 @@
     </div>
     
     <div class="pc-controls-hint">
-        <b>[ZQSD]</b> Bouger &nbsp; <b>[CLIC GAUCHE]</b> Action &nbsp; <b>[TAB]</b> Menu &nbsp; <b>[VERR MAJ]</b> Carte
+        Appuie sur <b>[²]</b> pour voir les touches
     </div>
+</div>
+
+<div id="controls-menu" class="modal">
+    <h2>⌨️ COMMANDES</h2>
+    <table>
+        <tr><th>Action</th><th>Touche</th></tr>
+        <tr><td>Se déplacer</td><td><kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd></td></tr>
+        <tr><td>Attaquer / Action</td><td><kbd>Clic Gauche</kbd></td></tr>
+        <tr><td>Menu Artisanat</td><td><kbd>TAB</kbd></td></tr>
+        <tr><td>Carte / Minimap</td><td><kbd>Verr Maj</kbd></td></tr>
+        <tr><td>Fermer ce menu</td><td><kbd>²</kbd> ou <kbd>ESC</kbd></td></tr>
+    </table>
+    <button class="btn close-modal" onclick="toggleControls(false)">RETOUR AU JEU</button>
 </div>
 
 <div id="craft-menu" class="modal">
     <h2>🛠️ FORGE & ARTISANAT</h2>
     <div class="craft-row" style="border-color:#f39c12; background:rgba(243,156,18,0.1);">
-        <div><strong>🏠 BASE / SOIN (Niv <span id="house-lvl">0</span>)</strong><br><small id="house-desc">Permet de Respawn + Soin</small><br><span class="cost" id="house-cost">...</span></div>
+        <div><strong>🏠 BASE (Niv <span id="house-lvl">0</span>)</strong><br><small id="house-desc">Respawn + Soin</small><br><span class="cost" id="house-cost">...</span></div>
         <button class="btn" id="btn-house" onclick="game.craft('house')">BÂTIR</button>
     </div>
     <div class="craft-row" style="border-color:#3498db; background:rgba(52,152,219,0.1);">
@@ -105,12 +123,12 @@
     <div class="craft-row"><div>⛏️ <strong>PIOCHE</strong> <small id="pick-lvl-menu">Niv 1</small><br><span class="cost" id="pick-cost">...</span></div><button class="btn" id="btn-pick" onclick="game.craft('pick')">UP</button></div>
     <div class="craft-row"><div>⚔️ <strong>ÉPÉE</strong> <small id="sword-lvl-menu">Niv 1</small><br><span class="cost" id="sword-cost">...</span></div><button class="btn" id="btn-sword" onclick="game.craft('sword')">UP</button></div>
 
-    <button class="btn close-modal" onclick="toggleMenu(false)">RETOUR JEU (TAB)</button>
+    <button class="btn close-modal" onclick="toggleMenu(false)">RETOUR (TAB)</button>
 </div>
 
 <div id="death-screen" class="modal">
     <h2>💀 MORT !</h2>
-    <p>Ton aventure s'arrête ici... ou pas ?</p>
+    <p>Le monde est vaste, mais impitoyable.</p>
     <div class="death-options">
         <button class="btn" id="btn-respawn" onclick="respawnBase()">🏠 RESPAWN BASE</button>
         <button class="btn" id="btn-restart" style="background:#c0392b;" onclick="location.reload()">☠️ TOUT RECOMMENCER</button>
@@ -119,12 +137,13 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE - 10k MAP + BIOMES RANDOM + MINIMAP
+ * SURVIVAL RPG ULTIMATE - 100K WORLD EDITION
  */
 
-const WORLD_W = 10000;
-const WORLD_H = 10000;
-const CHUNK_SIZE = 1000; // Taille d'un biome (carré)
+const WORLD_W = 100000; // 100k
+const WORLD_H = 100000; // 100k
+const SAFE_FOREST_SIZE = 30000; // 30k x 30k en haut à gauche
+const BIOME_CHUNK_SIZE = 8000; // Taille des "continents" aléatoires ailleurs
 const SCALE_BASE = 4;
 
 const PALETTE = [
@@ -135,10 +154,10 @@ const PALETTE = [
 
 // Configuration des Biomes
 const BIOME_TYPES = {
-    FOREST: { color: '#27ae60', ground: '#2ecc71', tree: 'TREE', rock: 'STONE', mob: null, rare: null },
-    DESERT: { color: '#e67e22', ground: '#f1c40f', tree: null, rock: 'ROCK_GOLD', mob: 'SCORPION', rare: 'gold_rock' },
-    SNOW:   { color: '#bdc3c7', ground: '#ecf0f1', tree: null, rock: 'IRON_ROCK', mob: 'WOLF', rare: 'iron_rock' },
-    VOLCANO:{ color: '#c0392b', ground: '#581212', tree: null, rock: 'RUBY', mob: 'DEMON', rare: 'ruby' }
+    FOREST: { color: '#27ae60', ground: '#2ecc71', tree: 'TREE', rock: 'STONE', mob: null },
+    DESERT: { color: '#e67e22', ground: '#f1c40f', tree: null, rock: 'ROCK_GOLD', mob: 'SCORPION' },
+    SNOW:   { color: '#bdc3c7', ground: '#ecf0f1', tree: null, rock: 'IRON_ROCK', mob: 'WOLF' },
+    VOLCANO:{ color: '#c0392b', ground: '#581212', tree: null, rock: 'RUBY', mob: 'DEMON' }
 };
 
 const PIXEL_ASSETS = {
@@ -184,12 +203,10 @@ let lastTime = 0;
 let keys = {}; 
 let isMenuOpen = false;
 let isMinimapOpen = false;
-
-// Grille des biomes (ex: mapGrid[y][x] = 'FOREST')
-let mapGrid = []; 
+let isControlsOpen = false;
 
 let game = { 
-    player: { x: 500, y: 500, hp: 100, maxHp: 100, speed: 6, size: 24, angle: 0, iframes: 0 }, 
+    player: { x: 15000, y: 15000, hp: 100, maxHp: 100, speed: 7, size: 24, angle: 0, iframes: 0 }, // Spawn au milieu de la forêt 30k
     inv: { wood:0, stone:0, gold:0, iron:0, obsi:0, axe:1, pick:1, sword:1, armor:0 }, 
     house: { active: false, x: 0, y: 0, lvl: 0, cooldown: 0 }, 
     quest: { id: 0, progress: 0 }, 
@@ -199,106 +216,86 @@ let game = {
     particles: [] 
 };
 
-// --- GENERATION MONDE ALEATOIRE ---
+// --- GENERATION BIOMES (ALGO MATHEMATIQUE) ---
+function getBiomeAt(x, y) {
+    // 1. GIGA FOREST au début (0 à 30000px)
+    if (x >= 0 && x < SAFE_FOREST_SIZE && y >= 0 && y < SAFE_FOREST_SIZE) {
+        return 'FOREST';
+    }
+
+    // 2. Biomes aléatoires basés sur une grille large (pseudo-noise simple)
+    let bx = Math.floor(x / BIOME_CHUNK_SIZE);
+    let by = Math.floor(y / BIOME_CHUNK_SIZE);
+    
+    // Petit algo pour générer un nombre déterministe par chunk
+    let noise = Math.sin(bx * 12.9898 + by * 78.233) * 43758.5453;
+    let val = noise - Math.floor(noise); // Entre 0.0 et 1.0
+
+    if (val < 0.35) return 'FOREST'; 
+    if (val < 0.60) return 'DESERT';
+    if (val < 0.85) return 'SNOW';
+    return 'VOLCANO';
+}
+
 function init() {
     resize();
-    generateBiomes();
     generateObjects();
     setupInputs();
     requestAnimationFrame(loop);
 }
 
-function generateBiomes() {
-    const rows = Math.ceil(WORLD_H / CHUNK_SIZE);
-    const cols = Math.ceil(WORLD_W / CHUNK_SIZE);
-    mapGrid = [];
-
-    for(let y=0; y<rows; y++) {
-        let row = [];
-        for(let x=0; x<cols; x++) {
-            // Le spawn (0,0) est forcé en FOREST
-            if (x===0 && y===0) {
-                row.push('FOREST');
-                continue;
-            }
-            // Choix aléatoire
-            const r = Math.random();
-            if(r < 0.4) row.push('FOREST');
-            else if(r < 0.65) row.push('DESERT');
-            else if(r < 0.85) row.push('SNOW');
-            else row.push('VOLCANO');
-        }
-        mapGrid.push(row);
-    }
-}
-
-function getBiomeAt(x, y) {
-    let col = Math.floor(x / CHUNK_SIZE);
-    let row = Math.floor(y / CHUNK_SIZE);
-    if(row < 0 || row >= mapGrid.length || col < 0 || col >= mapGrid[0].length) return 'FOREST'; // Bordure
-    return mapGrid[row][col];
-}
-
 function generateObjects() {
     game.objects = [];
-
-    // Fonction pour trouver un point aléatoire dans un biome spécifique
-    const getRandomSpotInBiome = (targetBiome) => {
-        for(let i=0; i<50; i++) { // 50 tentatives
-            let x = Math.random() * WORLD_W;
-            let y = Math.random() * WORLD_H;
-            if(getBiomeAt(x, y) === targetBiome) return {x, y};
-        }
-        return null; // Pas trouvé
-    };
-
-    // 1. Ressources de base (partout sauf si logique spéciale)
+    
+    // Génération dense dans la zone de départ (Forêt 30k)
+    for(let i=0; i<2500; i++) {
+        let x = Math.random() * SAFE_FOREST_SIZE;
+        let y = Math.random() * SAFE_FOREST_SIZE;
+        createObject('tree', x, y);
+    }
     for(let i=0; i<800; i++) {
-        let x = Math.random() * WORLD_W;
-        let y = Math.random() * WORLD_H;
-        let b = getBiomeAt(x, y);
-        if(b === 'FOREST') createObject('tree', x, y);
-        else if(Math.random() < 0.3) createObject('stone', x, y); // Pierre possible partout mais moins
+        let x = Math.random() * SAFE_FOREST_SIZE;
+        let y = Math.random() * SAFE_FOREST_SIZE;
+        createObject('stone', x, y);
+    }
+    // Slimes dans la forêt mais loin du spawn exact
+    for(let i=0; i<200; i++) {
+        let x = Math.random() * SAFE_FOREST_SIZE;
+        let y = Math.random() * SAFE_FOREST_SIZE;
+        createObject('slime', x, y);
     }
 
-    // 2. Ressources Spécifiques aux biomes
-    for(let i=0; i<300; i++) {
-        let x = Math.random() * WORLD_W;
-        let y = Math.random() * WORLD_H;
-        let b = getBiomeAt(x, y);
-        if(b === 'DESERT') createObject('gold_rock', x, y);
-        if(b === 'SNOW') createObject('iron_rock', x, y);
-        if(b === 'VOLCANO') createObject('ruby', x, y);
-    }
-
-    // 3. Mobs (PAS DANS LA FORET)
-    const spawnMob = (type, count) => {
+    // Génération éparse sur le reste du monde (100k x 100k)
+    // On génère un certain nombre d'objets par type sur toute la map
+    const spawnRandomly = (type, count, biomeReq) => {
         let spawned = 0;
         while(spawned < count) {
             let x = Math.random() * WORLD_W;
             let y = Math.random() * WORLD_H;
             let b = getBiomeAt(x, y);
             
-            let valid = false;
-            if(type === 'slime' && b !== 'FOREST') valid = true; // Slime partout sauf foret
-            if(type === 'scorpion' && b === 'DESERT') valid = true;
-            if(type === 'wolf' && b === 'SNOW') valid = true;
-            if(type === 'demon' && b === 'VOLCANO') valid = true;
+            if(biomeReq && b !== biomeReq) continue; // Doit matcher le biome
+            if(b === 'FOREST' && (type!=='tree' && type!=='stone' && type!=='slime')) continue; // Pas de gros mobs en foret
 
-            if(valid) { createObject(type, x, y); spawned++; }
+            createObject(type, x, y);
+            spawned++;
         }
     };
 
-    spawnMob('slime', 50);
-    spawnMob('scorpion', 60);
-    spawnMob('wolf', 60);
-    spawnMob('demon', 40);
+    // Ressources biomes
+    spawnRandomly('tree', 4000, 'FOREST'); // Arbres dans les autres forêts
+    spawnRandomly('gold_rock', 1500, 'DESERT');
+    spawnRandomly('iron_rock', 1500, 'SNOW');
+    spawnRandomly('ruby', 1000, 'VOLCANO');
 
-    // Boss (Volcan lointain)
-    let bossSpot = getRandomSpotInBiome('VOLCANO');
-    if(!bossSpot) bossSpot = {x: 9500, y: 9500};
-    createObject('boss', bossSpot.x, bossSpot.y);
-    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', bossSpot.x+Math.cos(a)*400, bossSpot.y+Math.sin(a)*400);
+    // Mobs
+    spawnRandomly('scorpion', 800, 'DESERT');
+    spawnRandomly('wolf', 800, 'SNOW');
+    spawnRandomly('demon', 600, 'VOLCANO');
+
+    // Boss (Très loin)
+    createObject('boss', 98000, 98000);
+    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 98000+Math.cos(a)*400, 98000+Math.sin(a)*400);
 }
 
 function createObject(type, x, y) {
@@ -368,7 +365,7 @@ function update(dt) {
     game.objects.forEach(o => {
         if(o.hostile && o.hp > 0) {
             let dist = Math.hypot(game.player.x - o.x, game.player.y - o.y);
-            if(dist < 400) { // Aggro range
+            if(dist < 400) { 
                 o.x += (game.player.x - o.x) / dist * o.speed;
                 o.y += (game.player.y - o.y) / dist * o.speed;
                 if(dist < game.player.size + o.size/2 && game.player.iframes <= 0) {
@@ -393,7 +390,7 @@ function update(dt) {
     }
 
     // Jour/Nuit
-    game.dayTime += 0.0003; // Plus lent sur grande map
+    game.dayTime += 0.0002; 
     if(game.dayTime > 1) game.dayTime = 0;
 }
 
@@ -414,24 +411,22 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
 }
 
 function draw() {
-    // 1. Background Grid (Optimisé: dessine seulement les chunks visibles)
+    // 1. Background - On dessine des gros carrés de couleur selon le biome
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    
     ctx.save();
     ctx.translate(-game.camera.x, -game.camera.y);
 
-    let startCol = Math.floor(game.camera.x / CHUNK_SIZE);
-    let endCol = startCol + Math.ceil(canvas.width / CHUNK_SIZE) + 1;
-    let startRow = Math.floor(game.camera.y / CHUNK_SIZE);
-    let endRow = startRow + Math.ceil(canvas.height / CHUNK_SIZE) + 1;
+    // Optimisation: Ne dessiner que les "chunks" de biome visibles
+    let startX = Math.floor(game.camera.x / 1000) * 1000;
+    let startY = Math.floor(game.camera.y / 1000) * 1000;
+    let endX = startX + canvas.width + 1000;
+    let endY = startY + canvas.height + 1000;
 
-    for(let r = startRow; r < endRow; r++) {
-        for(let c = startCol; c < endCol; c++) {
-            if(r >= 0 && r < mapGrid.length && c >= 0 && c < mapGrid[0].length) {
-                let type = mapGrid[r][c];
-                ctx.fillStyle = BIOME_TYPES[type].ground;
-                ctx.fillRect(c*CHUNK_SIZE, r*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-            }
+    for(let y=startY; y<endY; y+=1000) {
+        for(let x=startX; x<endX; x+=1000) {
+            let biome = getBiomeAt(x, y);
+            ctx.fillStyle = BIOME_TYPES[biome].ground;
+            ctx.fillRect(x, y, 1000, 1000);
         }
     }
 
@@ -484,31 +479,35 @@ function draw() {
 }
 
 function drawMinimap() {
-    // Dessine la carte entière sur un petit canvas
-    const scaleX = minimapCanvas.width / WORLD_W;
-    const scaleY = minimapCanvas.height / WORLD_H;
-    
+    // Pour une carte 100k, on ne peut pas tout dessiner pixel par pixel sans lag
+    // On va dessiner une vue simplifiée
     ctxMini.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+    
+    // Echelle : Le canvas fait 200px, le monde 100000. Ratio 1/500.
+    const scale = minimapCanvas.width / WORLD_W;
 
-    // Fond des biomes
-    for(let r=0; r<mapGrid.length; r++) {
-        for(let c=0; c<mapGrid[r].length; c++) {
-            ctxMini.fillStyle = BIOME_TYPES[mapGrid[r][c]].color;
-            ctxMini.fillRect(c*CHUNK_SIZE*scaleX, r*CHUNK_SIZE*scaleY, CHUNK_SIZE*scaleX, CHUNK_SIZE*scaleY);
+    // Dessiner les biomes en gros blocs (pas pixel par pixel sinon trop lourd)
+    // On échantillonne tous les 2000 pixels
+    const step = 2500; 
+    for(let y=0; y<WORLD_H; y+=step) {
+        for(let x=0; x<WORLD_W; x+=step) {
+            let b = getBiomeAt(x, y);
+            ctxMini.fillStyle = BIOME_TYPES[b].color;
+            ctxMini.fillRect(x*scale, y*scale, step*scale + 0.5, step*scale + 0.5);
         }
-    }
-
-    // Maison
-    if(game.house.active) {
-        ctxMini.fillStyle = '#00FF00';
-        ctxMini.fillRect(game.house.x*scaleX - 2, game.house.y*scaleY - 2, 4, 4);
     }
 
     // Joueur
     ctxMini.fillStyle = 'red';
     ctxMini.beginPath();
-    ctxMini.arc(game.player.x*scaleX, game.player.y*scaleY, 3, 0, Math.PI*2);
+    ctxMini.arc(game.player.x*scale, game.player.y*scale, 3, 0, Math.PI*2);
     ctxMini.fill();
+
+    // Maison
+    if(game.house.active) {
+        ctxMini.fillStyle = '#00FF00';
+        ctxMini.fillRect(game.house.x*scale-2, game.house.y*scale-2, 4, 4);
+    }
 }
 
 // --- LOGIQUE JEU ---
@@ -573,7 +572,6 @@ game.craft = function(item) {
             game.house.lvl++; msg = "BASE UP!";
         }
     }
-    // Reste du craft identique...
     if(item === 'armor' && game.house.active) {
          let costs = [{s:50,w:50},{s:100,i:10},{s:200,ob:5}];
          if(game.inv.armor < 3) {
@@ -604,7 +602,6 @@ function updateUI() {
     let q = QUESTS[game.quest.id];
     document.getElementById('quest-txt').innerText = q ? `${q.txt} (${game.quest.progress}/${q.target})` : "Gagné !";
 
-    // Menu cost updates (simplifié pour lisibilité)
     document.getElementById('house-cost').innerText = (game.house.lvl<3) ? ["50 B", "150 B", "300 B"][game.house.lvl] : "MAX";
     document.getElementById('house-lvl').innerText = game.house.lvl;
 }
@@ -614,7 +611,6 @@ function createFloatText(txt, x, y, col) { game.particles.push({txt, x, y, col, 
 function showDeathScreen() {
     isGameRunning = false;
     document.getElementById('death-screen').style.display = 'block';
-    // Affiche le bouton respawn seulement si la maison est construite
     document.getElementById('btn-respawn').style.display = game.house.active ? 'block' : 'none';
 }
 
@@ -634,6 +630,11 @@ function toggleMenu(state) {
     if(isMenuOpen) updateUI();
 }
 
+function toggleControls(state) {
+    isControlsOpen = (state!==undefined) ? state : !isControlsOpen;
+    document.getElementById('controls-menu').style.display = isControlsOpen ? 'block' : 'none';
+}
+
 function toggleMinimap() {
     isMinimapOpen = !isMinimapOpen;
     document.getElementById('minimap-container').style.display = isMinimapOpen ? 'block' : 'none';
@@ -643,6 +644,8 @@ function setupInputs() {
     window.addEventListener('keydown', e => {
         if (e.code === 'Tab') { e.preventDefault(); toggleMenu(); }
         if (e.code === 'CapsLock') { e.preventDefault(); toggleMinimap(); }
+        // Touche ² (généralement Backquote sur Claviers AZERTY standards)
+        if (e.code === 'Backquote' || e.key === '²') { e.preventDefault(); toggleControls(); }
         keys[e.code] = true;
     });
     window.addEventListener('keyup', e => keys[e.code] = false);
