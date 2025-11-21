@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Survival RPG ULTIMATE - V10</title>
+<title>Survival RPG ULTIMATE - V11</title>
 <style>
     /* --- CSS GLOBAL --- */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif;
@@ -57,7 +57,10 @@
     /* MENUS & MODALS */
     .modal { position: absolute;
     top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; width: 80%; max-width: 600px; border: 4px solid #fff; border-radius: 15px;
-    display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; overflow-y: auto; text-align: center;
+    display: none; z-index: 5000; padding: 20px; color: #fff; pointer-events: auto; box-shadow: 0 0 50px #000; 
+    /* Définit le défilement */
+    overflow-y: auto; text-align: center;
+    max-height: 90vh; /* Limite la hauteur du modal pour permettre le défilement */
     }
     .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;
     }
@@ -83,8 +86,6 @@
 <div id="rotate-msg"><h1>📱 TOURNEZ L'ÉCRAN</h1><p>Jeu optimisé pour le mode Paysage</p></div>
 
 <canvas id="gameCanvas"></canvas>
-<div id="night-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:black;pointer-events:none;opacity:0;z-index:10;"></div>
-
 <div class="ui-layer">
     <div class="hud">
         <div class="hud-row" style="color:#e74c3c; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">
@@ -145,16 +146,13 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V10 - Monde 6000x6000 & Menu Amélioré
+ * SURVIVAL RPG ULTIMATE V11 - Suppression Nuit, Menu Fermeture Auto
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
-// MODIFIÉ: 4000 -> 6000
 const WORLD_W = 6000;
-// MODIFIÉ: 5000 -> 6000
 const WORLD_H = 6000;
 const SCALE_BASE = 4; // Taille d'un pixel dans le jeu
-// MODIFIÉ: 500 -> 2000 (Nouvelle zone sécurisée)
 const SAFE_ZONE_X = 2000; 
 
 const PALETTE = [
@@ -162,82 +160,28 @@ const PALETTE = [
     '#95a5a6', '#e74c3c', '#f1c40f', '#3498db', '#e91e63', 
     '#bdc3c7', '#1c2833', '#1e8449' // 12: Dark Green (Forest on Map)
 ];
-// ... PIXEL_ASSETS (Non répété ici pour la taille, mais il est dans la version finale)
 const PIXEL_ASSETS = {
-    PLAYER_IDLE: [
-        [0,0,1,1,1,1,0,0], [0,1,6,2,2,6,1,0], [0,1,6,2,2,6,1,0], [0,0,1,3,3,1,0,0],
-        [0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]
-    ],
-    PLAYER_SWORD: [
-        [1,0,0,0,0,0,0,0], [1,1,0,0,0,0,0,0], [0,1,1,0,0,0,0,0], [0,0,1,1,1,1,1,0],
-        [0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]
-    ],
-    TREE: [
-        [0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [0,0,0,3,3,0,0,0],
-    
-        [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0]
-    ],
-    STONE: [
-        [0,0,5,5,5,5,0,0], [0,5,5,5,5,5,5,0], [5,5,5,1,5,5,5,5], [5,5,1,5,5,5,5,5],
-        [0,5,5,5,5,5,5,0], [0,0,5,5,5,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
-    ],
-    SLIME: [
-        [0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [4,4,1,4,4,1,4,4],
-        [4,4,4,4,4,4,4,4], [0,4,4,1,1,4,4,0], [0,0,4,4,4,4,0,0], [0,0,0,0,0,0,0,0]
-    ],
-    HOUSE_LVL1: [
-        [0,0,0,1,1,0,0,0], [0,0,1,6,6,1,0,0], [0,1,3,3,3,3,1,0], [1,3,3,3,3,3,3,1],
-        [1,3,2,1,1,2,3,1], [1,3,2,1,1,2,3,1], [1,3,3,3,3,3,3,1], 
-        [1,1,1,1,1,1,1,1]
-    ],
-    HOUSE_LVL2: [
-        [0,0,1,2,2,1,0,0], [0,1,3,3,3,3,1,0], [1,3,7,7,7,7,3,1], [1,3,7,2,2,7,3,1],
-        [1,3,7,2,2,7,3,1], [1,3,7,7,7,7,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]
-    ],
-    ROCK_GOLD: [
-        [0,7,7,7,7,0,0,0], [7,7,5,5,5,7,7,0], [7,5,5,7,5,5,7,7], [5,7,5,5,5,5,7,0],
-        [5,5,7,7,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
-    ],
-    SCORPION: [
-        [1,0,0,0,0,0,0,1], [0,1,0,0,0,0,1,0], [0,0,1,1,1,1,0,0], [0,0,1,6,6,1,0,0],
-        [0,0,1,1,1,1,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
-    ],
-   
-    IRON_ROCK: [
-        [0,0,10,10,10,10,0,0], [0,10,5,5,5,10,10,0], [10,5,5,10,5,5,10,10], [5,10,5,5,5,5,10,0],
-        [5,5,10,10,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]
-    ],
-    WOLF: [
-        [0,1,1,0,0,1,1,0], [1,2,2,1,1,2,2,1], [1,2,2,2,2,2,2,1], [0,1,2,2,2,2,1,0],
-        [0,0,1,2,2,1,0,0], [0,0,1,1,1,1,0,0], [0,0,1,0,0,1,0,0], [0,0,1,0,0,1,0,0]
-    ],
-    RUBY: [
-        [0,0,0,9,9,0,0,0], [0,0,9,9,9,9,0,0], [0,9,9,1,1,9,9,0], [9,9,1,9,9,1,9,9],
-        [9,1,9,9,9,9,1,9], [9,9,9,1,1,9,9,9], [0,9,9,9,9,9,9,0], [0,0,0,0,0,0,0,0]
-    ],
-    DEMON: [
-     
-        [0,6,0,1,1,0,6,0], [1,6,1,6,6,1,6,1], [1,1,1,6,6,1,1,1], [0,1,1,6,6,1,1,0],
-        [0,0,1,6,6,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,0,0,1,0,0]
-    ],
-    BOSS: [ // 16x16
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0], [0,0,0,0,1,6,6,6,6,1,0,0,0,0,0,0],
-        [0,0,0,1,6,6,1,6,6,6,1,0,0,0,0,0], [0,0,1,6,6,6,6,6,6,6,6,1,0,0,0,0], [0,1,6,6,6,6,6,6,6,6,6,6,1,0,0,0],
-        [1,6,6,6,1,1,6,6,1,1,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0],
-        [0,1,6,6,6,1,1,1,1,1,6,6,6,1,0,0], [0,0,1,6,6,1,0,0,0,1,6,6,1,0,0,0], [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0],
-        [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0], [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    ]
+    // Assets (non répétés pour concision)
+    PLAYER_IDLE: [[0,0,1,1,1,1,0,0], [0,1,6,2,2,6,1,0], [0,1,6,2,2,6,1,0], [0,0,1,3,3,1,0,0],[0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]],
+    PLAYER_SWORD: [[1,0,0,0,0,0,0,0], [1,1,0,0,0,0,0,0], [0,1,1,0,0,0,0,0], [0,0,1,1,1,1,1,0],[0,0,1,3,3,1,0,0], [0,0,1,2,2,1,0,0], [0,0,1,3,3,1,0,0], [0,1,3,0,0,3,1,0]],
+    TREE: [[0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [0,0,0,3,3,0,0,0],[0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0], [0,0,0,3,3,0,0,0]],
+    STONE: [[0,0,5,5,5,5,0,0], [0,5,5,5,5,5,5,0], [5,5,5,1,5,5,5,5], [5,5,1,5,5,5,5,5],[0,5,5,5,5,5,5,0], [0,0,5,5,5,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
+    SLIME: [[0,0,4,4,4,4,0,0], [0,4,4,4,4,4,4,0], [4,4,4,4,4,4,4,4], [4,4,1,4,4,1,4,4],[4,4,4,4,4,4,4,4], [0,4,4,1,1,4,4,0], [0,0,4,4,4,4,0,0], [0,0,0,0,0,0,0,0]],
+    HOUSE_LVL1: [[0,0,0,1,1,0,0,0], [0,0,1,6,6,1,0,0], [0,1,3,3,3,3,1,0], [1,3,3,3,3,3,3,1],[1,3,2,1,1,2,3,1], [1,3,2,1,1,2,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]],
+    HOUSE_LVL2: [[0,0,1,2,2,1,0,0], [0,1,3,3,3,3,1,0], [1,3,7,7,7,7,3,1], [1,3,7,2,2,7,3,1],[1,3,7,2,2,7,3,1], [1,3,7,7,7,7,3,1], [1,3,3,3,3,3,3,1], [1,1,1,1,1,1,1,1]],
+    ROCK_GOLD: [[0,7,7,7,7,0,0,0], [7,7,5,5,5,7,7,0], [7,5,5,7,5,5,7,7], [5,7,5,5,5,5,7,0],[5,5,7,7,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
+    SCORPION: [[1,0,0,0,0,0,0,1], [0,1,0,0,0,0,1,0], [0,0,1,1,1,1,0,0], [0,0,1,6,6,1,0,0],[0,0,1,1,1,1,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
+    IRON_ROCK: [[0,0,10,10,10,10,0,0], [0,10,5,5,5,10,10,0], [10,5,5,10,5,5,10,10], [5,10,5,5,5,5,10,0],[5,5,10,10,5,5,0,0], [0,5,5,5,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]],
+    WOLF: [[0,1,1,0,0,1,1,0], [1,2,2,1,1,2,2,1], [1,2,2,2,2,2,2,1], [0,1,2,2,2,2,1,0],[0,0,1,2,2,1,0,0], [0,0,1,1,1,1,0,0], [0,0,1,0,0,1,0,0], [0,0,1,0,0,1,0,0]],
+    RUBY: [[0,0,0,9,9,0,0,0], [0,0,9,9,9,9,0,0], [0,9,9,1,1,9,9,0], [9,9,1,9,9,1,9,9],[9,1,9,9,9,9,1,9], [9,9,9,1,1,9,9,9], [0,9,9,9,9,9,9,0], [0,0,0,0,0,0,0,0]],
+    DEMON: [[0,6,0,1,1,0,6,0], [1,6,1,6,6,1,6,1], [1,1,1,6,6,1,1,1], [0,1,1,6,6,1,1,0],[0,0,1,6,6,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,0,0,1,0,0]],
+    BOSS: [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0], [0,0,0,0,1,6,6,6,6,1,0,0,0,0,0,0],[0,0,0,1,6,6,1,6,6,6,1,0,0,0,0,0], [0,0,1,6,6,6,6,6,6,6,6,1,0,0,0,0], [0,1,6,6,6,6,6,6,6,6,6,6,1,0,0,0],[1,6,6,6,1,1,6,6,1,1,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0],[0,1,6,6,6,1,1,1,1,1,6,6,6,1,0,0], [0,0,1,6,6,1,0,0,0,1,6,6,1,0,0,0], [0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0],[0,0,0,1,6,1,0,0,0,1,6,1,0,0,0,0], [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 };
 // --- BIOMES, QUESTS, VARIABLES ---
 const BIOMES = { 
-    // MODIFIÉ: 0,1000 -> 0,2000
     FOREST:{start:0,end:2000,color:'#27ae60',ground:'#2ecc71',asset:'TREE', mapColor: PALETTE[12]}, 
-    // MODIFIÉ: 1000,2000 -> 2000,4000
     DESERT:{start:2000,end:4000,color:'#e67e22',ground:'#f1c40f',asset:'ROCK_GOLD', mapColor: PALETTE[7]}, 
-    // MODIFIÉ: 2000,3000 -> 4000,5000
     SNOW:{start:4000,end:5000,color:'#bdc3c7',ground:'#ecf0f1',asset:'IRON_ROCK', mapColor: PALETTE[8]}, 
-    // MODIFIÉ: 3000,4000 -> 5000,6000
     VOLCANO:{start:5000,end:6000,color:'#c0392b',ground:'#2c0505',asset:'RUBY', mapColor: PALETTE[6]} 
 };
 const QUESTS = [ 
@@ -247,33 +191,27 @@ const QUESTS = [
     { id: 3, txt: "Améliorer la HACHE (Niv 2)", type: 'axe', target: 2 },
     { id: 4, txt: "Explorer le DÉSERT (Est)", type: 'explore_desert', target: 1 },
     { id: 5, txt: "Trouver 5 OR (Désert)", type: 'gold', target: 5 },
-  
     { id: 6, txt: "Fabriquer une ÉPÉE en Or (Niv 3)", type: 'sword', target: 3 },
     { id: 7, txt: "Explorer la NEIGE", type: 'explore_snow', target: 1 },
     { id: 8, txt: "Tuer 3 LOUPS Blancs", type: 'kill_wolf', target: 3 },
     { id: 9, txt: "Trouver 5 FER", type: 'iron', target: 5 },
     { id: 10, txt: "Explorer le VOLCAN (Fin)", type: 'explore_volcano', target: 1 },
     { id: 11, txt: "Tuer le ROI DÉMON", type: 'kill_boss', target: 1 },
-    { 
-    id: 12, txt: "VOUS ÊTES LE MAÎTRE DE L'ÎLE !", type: 'win', target: 0 }
+    { id: 12, txt: "VOUS ÊTES LE MAÎTRE DE L'ÎLE !", type: 'win', target: 0 }
 ]; 
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
-// SUPPRIMÉ: Map canvas et contexte
-// const mapCanvas = document.getElementById('fullMapCanvas');
-// const ctxMap = mapCanvas.getContext('2d');
 
 let isGameRunning = true;
 let lastTime = 0;
-// let saveTimer = 0; // SUPPRIMÉ
 let joy = { active:false, dx:0, dy:0, sx:0, sy:0 };
 let game = { 
     player: { x: 500, y: 500, hp: 100, maxHp: 100, speed: 6, size: 24, angle: 0, iframes: 0 }, 
     inv: { wood:0, stone:0, gold:0, iron:0, obsi:0, axe:1, pick:1, sword:1, armor:0 }, 
     house: { active: false, x: 0, y: 0, lvl: 0, cooldown: 0 }, 
     quest: { id: 0, progress: 0 }, 
-    dayTime: 0, 
+    // SUPPRIMÉ : dayTime: 0, 
     camera: { x:0, y:0 }, 
     objects: [], 
     particles: [] 
@@ -303,7 +241,7 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
 }
 
 
-// --- WORLD GEN (Mobs réduits et Zone Sécurisée) ---
+// --- WORLD GEN ---
 function generateWorld() {
     game.objects = [];
     const spawn = (type, minX, maxX, count, maxY = WORLD_H) => {
@@ -314,14 +252,12 @@ function generateWorld() {
         }
     };
     // 1. FOREST (X=0 à 2000, Y=0 à 2000) : Sans mobs
-    // MODIFIÉ: X max 2000, Y max 2000
-    spawn('tree', 0, 2000, 200, 2000); // Augmenté pour la zone 2000x2000
-    spawn('stone', 0, 2000, 100, 2000); // Augmenté pour la zone 2000x2000
-    // PAS DE MOBS
+    spawn('tree', 0, 2000, 200, 2000); 
+    spawn('stone', 0, 2000, 100, 2000); 
     
     // 2. DESERT (X=2000 à 4000)
-    spawn('gold_rock', 2000, 4000, 80); // Ajusté pour 2000 de large
-    spawn('scorpion', 2000, 4000, 30); // Ajusté pour 2000 de large
+    spawn('gold_rock', 2000, 4000, 80); 
+    spawn('scorpion', 2000, 4000, 30); 
     
     // 3. SNOW (X=4000 à 5000)
     spawn('iron_rock', 4000, 5000, 50);
@@ -332,7 +268,6 @@ function generateWorld() {
     spawn('demon', 5000, 6000, 12);
     
     // BOSS FINAL
-    // MODIFIÉ: 5800, 3000 (Centre de la zone Volcan)
     createObject('boss', 5800, 3000);
     for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 5800+Math.cos(a)*400, 3000+Math.sin(a)*400);
 }
@@ -369,7 +304,7 @@ function createObject(type, x, y) {
 }
 
 
-// --- GAME LOOP & CORE FUNCTIONS (Unchanged logic) ---
+// --- GAME LOOP & CORE FUNCTIONS ---
 function loop(time) {
     if(!isGameRunning) return;
     let dt = time - lastTime;
@@ -392,20 +327,19 @@ function update(dt) {
         let angle = game.player.angle;
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
         let ny = game.player.y + Math.sin(angle) * game.player.speed;
-        // WORLD_H est maintenant 6000
         nx = Math.max(0, Math.min(WORLD_W, nx));
         ny = Math.max(0, Math.min(WORLD_H, ny));
         let collide = game.objects.some(o => o.solid && Math.hypot(nx-o.x, ny-o.y) < game.player.size + o.size/2);
         if(!collide) { game.player.x = nx;
         game.player.y = ny; }
         
-        // Quest Check - MODIFIÉ pour 6000 de large
+        // Quest Check
         if(nx > 2000 && nx < 4000) checkQuest('explore_desert', 1);
         if(nx > 4000 && nx < 5000) checkQuest('explore_snow', 1);
         if(nx > 5000) checkQuest('explore_volcano', 1);
     }
     
-    // Camera, Mobs, Healing, DayCycle... (Logic from V8)
+    // Camera, Mobs, Healing...
     game.camera.x = game.player.x - canvas.width/2;
     game.camera.y = game.player.y - canvas.height/2;
     if(game.player.iframes > 0) game.player.iframes--;
@@ -434,12 +368,88 @@ function update(dt) {
             }
         }
     }
-    game.dayTime += 0.0005;
-    if(game.dayTime > 1) game.dayTime = 0;
+    // SUPPRIMÉ : Logique du cycle jour/nuit (game.dayTime)
 } 
-// --- RENDU CARTE COMPLÈTE (SUPPRIMÉ) ---
-// function showFullMapModal() { ... }
-// --- ACTIONS & UI (Unchanged logic) ---
+
+// Fonction draw simplifiée pour les besoins de la réponse
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 1. Dessin du sol (Simplifié: on utilise la couleur du biome pour tout)
+    const biome = getBiome(game.player.x);
+    ctx.fillStyle = biome.ground;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Dessin des objets/entités
+    const sortedObjects = [...game.objects, {x: game.player.x, y: game.player.y, asset: getPlayerAsset(), size: game.player.size, isPlayer: true}];
+    sortedObjects.sort((a,b) => a.y - b.y);
+
+    for (let o of sortedObjects) {
+        let screenX = o.x - game.camera.x;
+        let screenY = o.y - game.camera.y;
+
+        if (o.isPlayer) {
+            drawPlayer(screenX, screenY);
+        } else {
+            drawPixelArt(o.asset, screenX, screenY);
+            // Barre de vie (simplifiée)
+            if (o.hp > 0 && o.hp < o.maxHp) {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(screenX - 15, screenY - 50, 30, 4);
+                ctx.fillStyle = 'lime';
+                ctx.fillRect(screenX - 15, screenY - 50, 30 * (o.hp / o.maxHp), 4);
+            }
+        }
+    }
+    // 3. Dessin des particules
+    for (let i = game.particles.length - 1; i >= 0; i--) {
+        let p = game.particles[i];
+        p.y += p.dy;
+        p.life--;
+        ctx.fillStyle = p.color;
+        ctx.font = '16px "Pixelated MS Sans Serif"';
+        ctx.globalAlpha = p.life / 40;
+        ctx.fillText(p.txt, p.x - game.camera.x, p.y - game.camera.y);
+        if (p.life <= 0) game.particles.splice(i, 1);
+    }
+    ctx.globalAlpha = 1;
+
+}
+
+function getPlayerAsset() {
+    // Simplifié: toujours l'épée si on a un objet proche, sinon idle.
+    return getNearestTarget() ? 'PLAYER_SWORD' : 'PLAYER_IDLE';
+}
+
+function drawPlayer(x, y) {
+    const asset = getPlayerAsset();
+    
+    ctx.save();
+    // Rotation
+    ctx.translate(x, y);
+    ctx.rotate(game.player.angle + Math.PI/2);
+    ctx.translate(-x, -y);
+    
+    drawPixelArt(asset, x, y);
+
+    // Iframes feedback
+    if (game.player.iframes % 4 < 2) {
+        ctx.globalAlpha = 0.4;
+        drawPixelArt(asset, x, y);
+        ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+}
+
+function getBiome(x) {
+    for(let key in BIOMES) {
+        if(x >= BIOMES[key].start && x < BIOMES[key].end) return BIOMES[key];
+    }
+    return BIOMES.FOREST;
+}
+
+
+// --- ACTIONS & UI (Logique inchangée) ---
 function handleAction() {
     let t = getNearestTarget();
     if(!t) return;
@@ -600,7 +610,7 @@ function createFloatText(txt, x, y, color) {
 function closeModal(id) {
     document.getElementById(id).style.display = 'none';
 }
-// --- DEATH / SAVE / LOAD / INPUTS (Unchanged logic) ---
+// --- DEATH / SAVE / LOAD / INPUTS (Logique inchangée) ---
 function showDeathScreen() {
     isGameRunning = false;
     const deathScreen = document.getElementById('death-screen');
