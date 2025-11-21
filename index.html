@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Survival RPG ULTIMATE - V9</title>
+<title>Survival RPG ULTIMATE - V10 (Sans Sauvegarde)</title>
 <style>
     /* --- CSS GLOBAL --- */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif; }
@@ -18,17 +18,18 @@
     .hud { position: absolute; top: 10px; left: 10px; background: rgba(20,20,20,0.9); color: #fff; padding: 8px; border-radius: 8px; border: 2px solid #555; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; pointer-events: auto; max-width: 200px; }
     .hud-row { display: flex; justify-content: space-between; gap: 10px; }
 
-    /* NOUVEAU CONTENEUR pour Quête + Carte */
-    .top-right-ui { position: absolute; top: 10px; right: 10px; display: flex; align-items: flex-start; gap: 10px; }
+    /* NOUVEAU CONTENEUR pour Quête + Carte + Menu */
+    .top-right-ui { position: absolute; top: 10px; right: 10px; display: flex; align-items: flex-start; gap: 10px; flex-direction: column; pointer-events: none; }
+    .top-row-buttons { display: flex; gap: 10px; pointer-events: auto; }
     
-    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px; border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; }
+    .quest-box { background: rgba(0,0,0,0.6); color: #f1c40f; padding: 10px; border-radius: 5px; border-left: 4px solid #f1c40f; font-size: 14px; max-width: 250px; text-align: right; pointer-events: none; margin-top: 10px; }
     .quest-title { font-weight: 900; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
     
-    /* MINI-MAP DEVIENT UN BOUTON */
-    #map-btn { width: 50px; height: 50px; border-radius: 10px; background: #3498db; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; }
+    /* MAP BUTTON */
+    #map-btn { width: 50px; height: 50px; border-radius: 10px; background: #3498db; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; }
     #map-btn:active { transform: translateY(4px); box-shadow: none; }
     
-    #menu-btn { width: 50px; height: 50px; background: #e67e22; border-radius: 10px; border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
+    #menu-btn { width: 50px; height: 50px; background: #e67e22; border-radius: 10px; border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 0 #d35400; }
     #menu-btn:active { transform: translateY(4px); box-shadow: none; }
     
     .controls { position: absolute; bottom: 20px; right: 20px; pointer-events: auto; }
@@ -48,6 +49,7 @@
     
     /* DEATH MENU SPECIFIC */
     #death-screen { background: rgba(192, 57, 43, 0.95); border-color: #e74c3c; width: 90%; max-width: 400px; }
+    .death-options button { margin: 10px; padding: 15px 25px; font-size: 16px; width: 80%; }
     
     /* FULL MAP MODAL */
     #map-modal { max-width: 90vw; max-height: 90vh; width: auto; height: auto; padding: 10px; }
@@ -63,8 +65,6 @@
 <div id="night-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:black;pointer-events:none;opacity:0;z-index:10;"></div>
 
 <div class="ui-layer">
-    <div id="save-notif" style="position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#27ae60;color:white;padding:5px 15px;border-radius:5px;display:none;z-index:5001;">💾 Sauvegarde auto...</div>
-
     <div class="hud">
         <div class="hud-row" style="color:#e74c3c; border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">
             <span>❤️ VIE</span> <span id="hud-hp">100/100</span>
@@ -77,13 +77,14 @@
     </div>
     
     <div class="top-right-ui">
-        <div id="map-btn" onclick="showFullMapModal()">🔍</div>
-        <div id="menu-btn">⚙️</div>
-    </div>
-
-    <div class="quest-box">
-        <div class="quest-title">OBJECTIF ACTUEL</div>
-        <div id="quest-txt">Chargement...</div>
+        <div class="top-row-buttons">
+            <div id="map-btn" onclick="showFullMapModal()">🔍</div>
+            <div id="menu-btn">⚙️</div>
+        </div>
+        <div class="quest-box">
+            <div class="quest-title">OBJECTIF ACTUEL</div>
+            <div id="quest-txt">Chargement...</div>
+        </div>
     </div>
     
     <div id="joystick-zone"><div id="joystick-stick" style="position: absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 35px; left: 35px;"></div></div>
@@ -116,31 +117,29 @@
 
 <div id="death-screen" class="modal">
     <h2>💀 MORT !</h2>
-    <p>Ton aventure s'arrête ici. Que souhaites-tu faire ?</p>
+    <p>Ton aventure s'arrête ici. Clique sur le bouton pour recommencer.</p>
     <div class="death-options">
         <button class="btn" id="btn-restart" onclick="deathMenuAction('restart')">🎮 Tout Recommencer</button>
-        <button class="btn" id="btn-respawn" onclick="deathMenuAction('respawn')">🏡 Revenir à la Maison</button>
     </div>
 </div>
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V9 - Zone Sécurisée & Carte Complète
+ * SURVIVAL RPG ULTIMATE V10 - SANS SAUVEGARDE
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
 const WORLD_W = 4000;
 const WORLD_H = 4000;
-const SCALE_BASE = 4; // Taille d'un pixel dans le jeu
-const SAFE_ZONE_X = 500; // Nouvelle zone sans mobs de 0 à 500 X
+const SCALE_BASE = 4;
+const SAFE_ZONE_X = 500; 
 
 const PALETTE = [
     'rgba(0,0,0,0)', '#000000', '#FFFFFF', '#8b4513', '#2ecc71', 
     '#95a5a6', '#e74c3c', '#f1c40f', '#3498db', '#e91e63', 
-    '#bdc3c7', '#1c2833', '#1e8449' // 12: Dark Green (Forest on Map)
+    '#bdc3c7', '#1c2833', '#1e8449'
 ];
 
-// ... PIXEL_ASSETS (Non répété ici pour la taille, mais il est dans la version finale)
 const PIXEL_ASSETS = {
     PLAYER_IDLE: [
         [0,0,1,1,1,1,0,0], [0,1,6,2,2,6,1,0], [0,1,6,2,2,6,1,0], [0,0,1,3,3,1,0,0],
@@ -194,7 +193,7 @@ const PIXEL_ASSETS = {
         [0,6,0,1,1,0,6,0], [1,6,1,6,6,1,6,1], [1,1,1,6,6,1,1,1], [0,1,1,6,6,1,1,0],
         [0,0,1,6,6,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,3,3,1,0,0], [0,0,1,0,0,1,0,0]
     ],
-    BOSS: [ // 16x16
+    BOSS: [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0], [0,0,0,0,1,6,6,6,6,1,0,0,0,0,0,0],
         [0,0,0,1,6,6,1,6,6,6,1,0,0,0,0,0], [0,0,1,6,6,6,6,6,6,6,6,1,0,0,0,0], [0,1,6,6,6,6,6,6,6,6,6,6,1,0,0,0],
         [1,6,6,6,1,1,6,6,1,1,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0], [1,6,6,6,6,6,6,6,6,6,6,6,6,1,0,0],
@@ -234,7 +233,6 @@ const ctxMap = mapCanvas.getContext('2d');
 
 let isGameRunning = true;
 let lastTime = 0;
-let saveTimer = 0;
 let joy = { active:false, dx:0, dy:0, sx:0, sy:0 };
 
 let game = { 
@@ -249,7 +247,8 @@ let game = {
 };
 
 
-// --- FONCTIONS DE RENDU PIXEL ART (Inchagée) ---
+// --- FONCTIONS DE RENDU PIXEL ART ---
+
 function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
     const asset = PIXEL_ASSETS[assetName];
     if (!asset) return; 
@@ -272,8 +271,15 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
     ctx.restore();
 }
 
+// --- INITIALISATION / WORLD GEN ---
+function init() {
+    resize();
+    generateWorld();
+    setupInputs();
+    requestAnimationFrame(loop);
+    document.body.addEventListener('touchstart', () => goFullscreen(), {once:true});
+}
 
-// --- WORLD GEN (Mobs réduits et Zone Sécurisée) ---
 function generateWorld() {
     game.objects = [];
     
@@ -285,22 +291,22 @@ function generateWorld() {
         }
     };
 
-    // 1. FOREST (Mobs réduits de 50% et ne spawnent qu'après X=500)
+    // 1. FOREST (X=0 à 1000)
     spawn('tree', 0, 1000, 120);
     spawn('stone', 0, 1000, 60);
-    spawn('slime', SAFE_ZONE_X, 1000, 10); // Mobs: 10 (au lieu de 20) et commencent à 500
+    spawn('slime', SAFE_ZONE_X, 1000, 10); // Mobs: 10 et commencent à X=500
     
-    // 2. DESERT (Mobs réduits de 50%)
+    // 2. DESERT (X=1000 à 2000)
     spawn('gold_rock', 1000, 2000, 40);
-    spawn('scorpion', 1000, 2000, 15); // Mobs: 15 (au lieu de 30)
+    spawn('scorpion', 1000, 2000, 15);
     
-    // 3. SNOW (Mobs réduits de 50%)
+    // 3. SNOW (X=2000 à 3000)
     spawn('iron_rock', 2000, 3000, 50);
-    spawn('wolf', 2000, 3000, 18); // Mobs: 18 (au lieu de 35)
+    spawn('wolf', 2000, 3000, 18);
     
-    // 4. VOLCANO (Mobs réduits de 50%)
+    // 4. VOLCANO (X=3000 à 4000)
     spawn('ruby', 3000, 4000, 30);
-    spawn('demon', 3000, 4000, 12); // Mobs: 12 (au lieu de 25)
+    spawn('demon', 3000, 4000, 12);
     
     // BOSS FINAL
     createObject('boss', 3800, 2000);
@@ -330,8 +336,7 @@ function createObject(type, x, y) {
     game.objects.push(o);
 }
 
-
-// --- GAME LOOP & CORE FUNCTIONS (Unchanged logic) ---
+// --- GAME LOOP ---
 function loop(time) {
     if(!isGameRunning) return;
 
@@ -347,14 +352,13 @@ function loop(time) {
         return;
     }
 
-    saveTimer += dt;
-    if(saveTimer > 10000) { saveGame(); saveTimer = 0; }
+    // Le système de sauvegarde auto a été retiré ici.
 
     requestAnimationFrame(loop);
 }
 
 function update(dt) {
-    // Player Move
+    // 1. PLAYER MOVE
     if(joy.active) {
         let angle = game.player.angle;
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
@@ -371,11 +375,12 @@ function update(dt) {
         if(nx > 2000 && nx < 3000) checkQuest('explore_snow', 1);
         if(nx > 3000) checkQuest('explore_volcano', 1);
     }
-    
-    // Camera, Mobs, Healing, DayCycle... (Logic from V8)
+
+    // 2. CAMERA
     game.camera.x = game.player.x - canvas.width/2;
     game.camera.y = game.player.y - canvas.height/2;
 
+    // 3. ENTITIES & MOBS
     if(game.player.iframes > 0) game.player.iframes--;
 
     game.objects.forEach(o => {
@@ -394,6 +399,7 @@ function update(dt) {
         }
     });
 
+    // 4. HOUSE HEALING
     if(game.house.active) {
         let dist = Math.hypot(game.player.x - game.house.x, game.player.y - game.house.y);
         if(dist < 100) {
@@ -406,67 +412,77 @@ function update(dt) {
         }
     }
 
+    // 5. CYCLE JOUR / NUIT
     game.dayTime += 0.0005;
     if(game.dayTime > 1) game.dayTime = 0;
 }
 
+function draw() {
+    ctx.fillStyle = BIOMES.FOREST.ground;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.save();
+    ctx.translate(-game.camera.x, -game.camera.y);
 
-// --- RENDU CARTE COMPLÈTE (NOUVEAU) ---
+    // DRAW GROUND
+    ctx.fillStyle = BIOMES.FOREST.ground; ctx.fillRect(0, 0, 1000, WORLD_H);
+    ctx.fillStyle = BIOMES.DESERT.ground; ctx.fillRect(1000, 0, 1000, WORLD_H);
+    ctx.fillStyle = BIOMES.SNOW.ground; ctx.fillRect(2000, 0, 1000, WORLD_H);
+    ctx.fillStyle = BIOMES.VOLCANO.ground; ctx.fillRect(3000, 0, 1000, WORLD_H);
 
-function showFullMapModal() {
-    document.getElementById('map-modal').style.display = 'block';
-    // Le canvas de la carte est redessiné chaque fois qu'on ouvre le modal
-    drawFullMap();
-}
+    // DRAW OBJECTS (Pixel Art)
+    game.objects.sort((a,b) => a.y - b.y);
+    for(let o of game.objects) {
+        let scale = o.isBoss ? SCALE_BASE * 3 : SCALE_BASE;
+        
+        // Simple culling 
+        if(o.x + o.size < game.camera.x || o.x - o.size > game.camera.x + canvas.width || 
+           o.y + o.size < game.camera.y || o.y - o.size > game.camera.y + canvas.height) continue;
+        
+        drawPixelArt(o.asset, o.x, o.y, scale);
+        
+        // Health Bar (conservée en rectangle simple)
+        if(o.hp < o.maxHp || o.isBoss) {
+            let w = 40; if(o.isBoss) w=100;
+            let pct = o.hp / o.maxHp;
+            ctx.fillStyle = 'black'; ctx.fillRect(o.x-w/2, o.y-o.size, w, 6);
+            ctx.fillStyle = 'red'; ctx.fillRect(o.x-w/2, o.y-o.size, w*pct, 6);
+        }
+    }
 
-function drawFullMap() {
-    // Redimensionner le canvas de la map pour qu'il soit carré et remplisse au mieux le modal
-    const size = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 500); 
-    mapCanvas.width = size;
-    mapCanvas.height = size;
-    const scale = size / WORLD_W; // Échelle de 4000px du monde à 'size' px sur le canvas
+    // DRAW HOUSE
+    if(game.house.active) {
+        let hAsset = (game.house.lvl == 1) ? 'HOUSE_LVL1' : 'HOUSE_LVL2';
+        drawPixelArt(hAsset, game.house.x, game.house.y, SCALE_BASE * 2);
+    }
 
-    ctxMap.clearRect(0, 0, size, size);
-
-    // Dessin des BIOMES
-    let xOffset = 0;
-    for (let key in BIOMES) {
-        const biome = BIOMES[key];
-        const width = (biome.end - biome.start) * scale;
-        ctxMap.fillStyle = biome.mapColor;
-        ctxMap.fillRect(xOffset, 0, width, size);
-        xOffset += width;
+    // DRAW PLAYER
+    if(game.player.iframes % 4 < 2) {
+        let pAsset = (game.inv.sword > 1) ? 'PLAYER_SWORD' : 'PLAYER_IDLE';
+        drawPixelArt(pAsset, game.player.x, game.player.y, SCALE_BASE * 1.5);
     }
     
-    // Dessin des RESSOURCES et MOBS
-    for (let o of game.objects) {
-        if (o.type === 'wall' || o.hp <= 0) continue;
+    // NIGHT OVERLAY Opacity
+    let darkness = 0;
+    if(game.dayTime > 0.7 || game.dayTime < 0.2) darkness = 0.6; 
+    document.getElementById('night-overlay').style.opacity = darkness;
 
-        ctxMap.fillStyle = o.mapDotColor;
-        // Dessiner en petit cercle pour les ressources/mobs
-        ctxMap.beginPath();
-        ctxMap.arc(o.x * scale, o.y * scale, o.isBoss ? 4 : 2, 0, Math.PI * 2);
-        ctxMap.fill();
+    // PARTICLES (Floating text)
+    for(let i=game.particles.length-1; i>=0; i--) {
+        let p = game.particles[i];
+        p.y -= 1; p.life--;
+        ctx.globalAlpha = p.life/40;
+        ctx.font = "bold 20px Arial";
+        ctx.fillStyle = p.col;
+        ctx.fillText(p.txt, p.x, p.y);
+        if(p.life <= 0) game.particles.splice(i, 1);
     }
+    ctx.globalAlpha = 1;
 
-    // Dessin de la MAISON
-    if (game.house.active) {
-        ctxMap.fillStyle = 'lime';
-        ctxMap.fillRect(game.house.x * scale - 3, game.house.y * scale - 3, 6, 6);
-    }
-    
-    // Dessin du JOUEUR
-    ctxMap.fillStyle = 'red';
-    ctxMap.beginPath();
-    ctxMap.arc(game.player.x * scale, game.player.y * scale, 5, 0, Math.PI * 2);
-    ctxMap.fill();
-    ctxMap.strokeStyle = 'white';
-    ctxMap.lineWidth = 1;
-    ctxMap.stroke();
+    ctx.restore();
 }
 
-
-// --- ACTIONS & UI (Unchanged logic) ---
+// --- ACTIONS & QUESTS ---
 
 function handleAction() {
     let t = getNearestTarget();
@@ -514,11 +530,12 @@ function checkQuest(type, amount) {
             createFloatText("🏆 QUÊTE TERMINÉE !", game.player.x, game.player.y - 50, 'gold');
             game.quest.id++;
             game.quest.progress = 0;
-            saveGame();
+            // Retrait de la sauvegarde ici
         }
     }
 }
 
+// --- CRAFTING SYSTEM ---
 game.craft = function(item) {
     let msg = "";
     // HOUSE
@@ -559,6 +576,7 @@ game.craft = function(item) {
     if(msg) { createFloatText(msg, game.player.x, game.player.y, '#fff'); updateUI(); }
 };
 
+// --- UI UPDATE ---
 function updateUI() {
     document.getElementById('hud-hp').innerText = Math.floor(game.player.hp) + "/" + game.player.maxHp;
     document.getElementById('hud-wood').innerText = game.inv.wood;
@@ -604,80 +622,73 @@ function createFloatText(txt, x, y, col) {
     game.particles.push({txt, x, y, col, life:40});
 }
 
-// --- DEATH / SAVE / LOAD / INPUTS (Unchanged logic) ---
+// --- RENDU CARTE COMPLÈTE ---
+
+function showFullMapModal() {
+    document.getElementById('map-modal').style.display = 'block';
+    drawFullMap();
+}
+
+function drawFullMap() {
+    const size = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 500); 
+    mapCanvas.width = size;
+    mapCanvas.height = size;
+    const scale = size / WORLD_W;
+
+    ctxMap.clearRect(0, 0, size, size);
+
+    // Dessin des BIOMES
+    let xOffset = 0;
+    for (let key in BIOMES) {
+        const biome = BIOMES[key];
+        const width = (biome.end - biome.start) * scale;
+        ctxMap.fillStyle = biome.mapColor;
+        ctxMap.fillRect(xOffset, 0, width, size);
+        xOffset += width;
+    }
+    
+    // Dessin des RESSOURCES et MOBS
+    for (let o of game.objects) {
+        if (o.type === 'wall' || o.hp <= 0) continue;
+
+        ctxMap.fillStyle = o.mapDotColor;
+        ctxMap.beginPath();
+        ctxMap.arc(o.x * scale, o.y * scale, o.isBoss ? 4 : 2, 0, Math.PI * 2);
+        ctxMap.fill();
+    }
+
+    // Dessin de la MAISON
+    if (game.house.active) {
+        ctxMap.fillStyle = 'lime';
+        ctxMap.fillRect(game.house.x * scale - 3, game.house.y * scale - 3, 6, 6);
+    }
+    
+    // Dessin du JOUEUR
+    ctxMap.fillStyle = 'red';
+    ctxMap.beginPath();
+    ctxMap.arc(game.player.x * scale, game.player.y * scale, 5, 0, Math.PI * 2);
+    ctxMap.fill();
+    ctxMap.strokeStyle = 'white';
+    ctxMap.lineWidth = 1;
+    ctxMap.stroke();
+}
+
+
+// --- MENU DE MORT / RESTART ---
 
 function showDeathScreen() {
     isGameRunning = false;
-    const deathScreen = document.getElementById('death-screen');
-    const respawnBtn = document.getElementById('btn-respawn');
-    
-    const hasValidSave = localStorage.getItem('rpg_save_v7') !== null;
-    
-    if (game.house.active && hasValidSave) {
-        respawnBtn.disabled = false;
-        respawnBtn.innerText = "🏡 Revenir à la Maison (Gratuit)";
-    } else {
-        respawnBtn.disabled = true;
-        respawnBtn.innerText = "❌ Maison non bâtie / Sauvegarde introuvable";
-        respawnBtn.style.backgroundColor = '#555';
-        respawnBtn.style.borderBottomColor = '#333';
-    }
-    
-    deathScreen.style.display = 'block';
+    document.getElementById('death-screen').style.display = 'block';
 }
 
 window.deathMenuAction = (action) => {
     if (action === 'restart') {
-        localStorage.removeItem('rpg_save_v7');
+        // Redémarre le jeu en rafraîchissant la page
         location.reload(); 
-    } else if (action === 'respawn') {
-        if (!document.getElementById('btn-respawn').disabled) {
-            loadGame(true);
-            document.getElementById('death-screen').style.display = 'none';
-            isGameRunning = true; 
-            requestAnimationFrame(loop);
-        }
     }
 };
 
-function saveGame() {
-    const data = {
-        p: {x:game.player.x, y:game.player.y, hp:game.player.hp, max:game.player.maxHp},
-        inv: game.inv,
-        house: game.house,
-        quest: game.quest,
-        objs: game.objects.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp))
-    };
-    localStorage.setItem('rpg_save_v7', JSON.stringify(data));
-    
-    let notif = document.getElementById('save-notif');
-    notif.style.display = 'block';
-    setTimeout(() => notif.style.display='none', 2000);
-}
-
-function loadGame(isRespawn = false) {
-    const raw = localStorage.getItem('rpg_save_v7');
-    if(!raw) return false;
-    try {
-        const d = JSON.parse(raw);
-        game.player.x = d.p.x; game.player.y = d.p.y; game.player.hp = d.p.hp; 
-        game.player.maxHp = d.p.max;
-        game.inv = d.inv;
-        game.house = d.house;
-        game.quest = d.quest;
-        
-        if (isRespawn && game.house.active) {
-            game.player.x = game.house.x; 
-            game.player.y = game.house.y;
-            game.player.hp = game.player.maxHp;
-            createFloatText("RESPAWN À LA MAISON", game.player.x, game.player.y - 70, 'lime');
-        }
-        
-        generateWorld(); 
-        return true;
-    } catch(e) { console.error("Save corrupt"); return false; }
-}
-
+// --- INPUTS & WINDOW ---
 function setupInputs() {
     const joyZone = document.getElementById('joystick-zone');
     const stick = document.getElementById('joystick-stick');
