@@ -82,7 +82,7 @@
     
     /* MENUS & MODALS */
     .modal { 
-        position: absolute;
+        position: absolute; /* Reste absolue pour le centrage */
         top: 50%; left: 50%; transform: translate(-50%, -50%); 
         background: #2c3e50; width: 80%; max-width: 600px; 
         border: 4px solid #fff; border-radius: 15px;
@@ -91,13 +91,39 @@
         text-align: center;
     }
 
-    /* NOUVEAU CONTENEUR POUR LE DÉFILEMENT (Mise en place de la correction) */
+    /* NOUVEAU: Bouton Fermeture X */
+    .close-modal-x {
+        position: absolute;
+        top: -20px; /* Positionnement haut */
+        right: -20px; /* Positionnement droite */
+        width: 40px;
+        height: 40px;
+        background: #c0392b;
+        color: white;
+        border-radius: 50%;
+        border: 3px solid white;
+        font-size: 24px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 3px 0 #922b21;
+        z-index: 6000; 
+        touch-action: manipulation !important;
+    }
+    .close-modal-x:active {
+        transform: translateY(3px);
+        box-shadow: none;
+    }
+
+    /* CONTENEUR POUR LE DÉFILEMENT (Amplitude augmentée) */
     .modal-content-scroller {
-        max-height: 70vh; /* Limite la hauteur du contenu */
-        overflow-y: auto; /* Permet le défilement */
-        touch-action: pan-y !important; /* Force le défilement vertical sur ce bloc */
-        padding-right: 15px; /* Pour gérer la barre de défilement */
-        margin-right: -15px; /* Pour centrer correctement */
+        max-height: 85vh; /* AUGMENTÉ de 70vh à 85vh */
+        overflow-y: auto; 
+        touch-action: pan-y !important; 
+        padding-right: 15px; 
+        margin-right: -15px; 
     }
     
     .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;
@@ -112,7 +138,7 @@
     .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5;
     }
     .close-modal { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px;
-    touch-action: manipulation !important; /* Assure la détection des tapotements pour la fermeture */
+    touch-action: manipulation !important; 
     }
     
     /* DEATH MENU SPECIFIC */
@@ -166,6 +192,7 @@
 </div>
 
 <div id="craft-menu" class="modal">
+    <div class="close-modal-x" onclick="document.getElementById('craft-menu').style.display='none'">X</div>
     <h2>🛠️ FORGE & ARTISANAT</h2>
     <div class="modal-content-scroller"> <div class="craft-row" style="border-color:#f39c12;
         background:rgba(243,156,18,0.1);">
@@ -186,11 +213,11 @@
 </div>
 
 <div id="map-modal" class="modal">
+    <div class="close-modal-x" onclick="document.getElementById('map-modal').style.display='none'">X</div>
     <h2>🗺️ CARTE DU MONDE (4000x4000)</h2>
     <div class="modal-content-scroller"> <canvas id="fullMapCanvas" width="400" height="400"></canvas>
     </div>
-    <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
-</div>
+    </div>
 
 <div id="death-screen" class="modal">
     <h2>💀 MORT !</h2>
@@ -311,7 +338,7 @@ const mapCanvas = document.getElementById('fullMapCanvas');
 const ctxMap = mapCanvas.getContext('2d');
 
 // --- EFFACEMENT FORCÉ DE LA SAUVEGARDE (À RETIRER APRÈS LE PREMIER LANCEMENT) ---
-localStorage.removeItem('rpg_save_v7');
+// localStorage.removeItem('rpg_save_v7');
 // --- FIN EFFACEMENT FORCÉ ---
 
 
@@ -849,6 +876,21 @@ function loadGame(isRespawn = false) {
     }
 } 
 
+// --- NOUVEAU: Fonction Fullscreen ---
+function tryFullscreen() {
+    const root = document.documentElement; // Élément HTML pour une meilleure compatibilité
+    if (root.requestFullscreen) {
+        root.requestFullscreen();
+    } else if (root.mozRequestFullScreen) { /* Firefox */
+        root.mozRequestFullScreen();
+    } else if (root.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        root.webkitRequestFullscreen();
+    } else if (root.msRequestFullscreen) { /* IE/Edge */
+        root.msRequestFullscreen();
+    }
+}
+
+
 function initInputs() {
     const joyZone = document.getElementById('joystick-zone');
     const stick = document.getElementById('joystick-stick');
@@ -896,7 +938,7 @@ function initInputs() {
     };
     joyZone.addEventListener('touchend', endJoy);
     
-    // RETRAIT du mousedown pour le support PC, seul touchstart est conservé
+    // Seulement touchstart pour l'action
     actionBtn.addEventListener('touchstart', e=>{ e.preventDefault(); handleAction(); });
     
     menuBtn.addEventListener('click', () => {
@@ -914,16 +956,20 @@ function resize() {
 function init() {
     // 1. Resize on start
     resize();
-    // 2. Load existing game or generate world
+    
+    // 2. Tente de passer en Fullscreen AUTOMATIQUEMENT
+    tryFullscreen();
+    
+    // 3. Load existing game or generate world
     if(!loadGame()) generateWorld();
     
-    // 3. Init Inputs (Touch only)
+    // 4. Init Inputs (Touch only)
     initInputs();
     
     // Force la mise à jour de l'UI
     updateUI(); 
 
-    // 4. Start Loop
+    // 5. Start Loop
     requestAnimationFrame(loop);
 }
 
