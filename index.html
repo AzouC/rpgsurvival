@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Survival RPG ULTIMATE - V11</title>
+<title>Survival RPG ULTIMATE - V12</title>
 <style>
     /* --- CSS GLOBAL --- */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif;
@@ -61,6 +61,8 @@
     /* Définit le défilement */
     overflow-y: auto; text-align: center;
     max-height: 90vh; /* Limite la hauteur du modal pour permettre le défilement */
+    /* FIX: Permet le défilement tactile vertical dans le menu */
+    touch-action: pan-y;
     }
     .modal h2 { color: #f1c40f; margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;
     }
@@ -146,7 +148,7 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V11 - Suppression Nuit, Menu Fermeture Auto
+ * SURVIVAL RPG ULTIMATE V12 - Corrections de la v11
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
@@ -211,7 +213,6 @@ let game = {
     inv: { wood:0, stone:0, gold:0, iron:0, obsi:0, axe:1, pick:1, sword:1, armor:0 }, 
     house: { active: false, x: 0, y: 0, lvl: 0, cooldown: 0 }, 
     quest: { id: 0, progress: 0 }, 
-    // SUPPRIMÉ : dayTime: 0, 
     camera: { x:0, y:0 }, 
     objects: [], 
     particles: [] 
@@ -324,7 +325,8 @@ function loop(time) {
 function update(dt) {
     // Player Move
     if(joy.active) {
-        let angle = game.player.angle;
+        // game.player.angle est mis à jour dans moveJoystick, mais nous l'avons retiré pour stopper la rotation.
+        let angle = game.player.angle; // Utilise le dernier angle, même s'il n'est plus mis à jour
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
         let ny = game.player.y + Math.sin(angle) * game.player.speed;
         nx = Math.max(0, Math.min(WORLD_W, nx));
@@ -368,10 +370,9 @@ function update(dt) {
             }
         }
     }
-    // SUPPRIMÉ : Logique du cycle jour/nuit (game.dayTime)
+    // Logique du cycle jour/nuit (game.dayTime) est supprimée
 } 
 
-// Fonction draw simplifiée pour les besoins de la réponse
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -424,12 +425,7 @@ function getPlayerAsset() {
 function drawPlayer(x, y) {
     const asset = getPlayerAsset();
     
-    ctx.save();
-    // Rotation
-    ctx.translate(x, y);
-    ctx.rotate(game.player.angle + Math.PI/2);
-    ctx.translate(-x, -y);
-    
+    // Rotation retirée pour que le joueur ne tourne plus sur lui-même
     drawPixelArt(asset, x, y);
 
     // Iframes feedback
@@ -438,7 +434,6 @@ function drawPlayer(x, y) {
         drawPixelArt(asset, x, y);
         ctx.globalAlpha = 1;
     }
-    ctx.restore();
 }
 
 function getBiome(x) {
@@ -714,7 +709,7 @@ function setupInputs() {
         stick.style.left = `${stickX}px`;
         stick.style.top = `${stickY}px`;
         
-        game.player.angle = angle;
+        // Ligne DELETED : game.player.angle = angle;
         game.player.moving = true;
     };
     
@@ -723,7 +718,10 @@ function setupInputs() {
         joy.sx = e.touches[0].clientX; joy.sy = e.touches[0].clientY;
         e.preventDefault();
     }, {passive:false});
-    joyZone.addEventListener('touchmove', e => { if(joy.active) moveJoystick(e); e.preventDefault(); }, {passive:false});
+    joyZone.addEventListener('touchmove', e => { 
+        if(joy.active) moveJoystick(e); 
+        e.preventDefault(); 
+    }, {passive:false});
 
     const endJoy = () => { 
         joy.active = false; 
