@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Survival RPG ULTIMATE - V9</title>
+<title>Survival RPG ULTIMATE - V10</title>
 <style>
     /* --- CSS GLOBAL --- */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; font-family: 'Pixelated MS Sans Serif', 'Segoe UI', sans-serif;
@@ -37,13 +37,7 @@
     .quest-title { font-weight: 900;
     text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #aaa; }
     
-    /* MINI-MAP DEVIENT UN BOUTON */
-    #map-btn { width: 50px;
-    height: 50px; border-radius: 10px; background: #3498db; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; pointer-events: auto;
-    cursor: pointer; box-shadow: 0 4px 0 #2980b9; transition: background 0.2s; }
-    #map-btn:active { transform: translateY(4px); box-shadow: none;
-    }
-    
+    /* MENU BTN (Reste à droite) */
     #menu-btn { width: 50px; height: 50px; background: #e67e22; border-radius: 10px;
     border: 2px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; pointer-events: auto; cursor: pointer;
     box-shadow: 0 4px 0 #d35400; }
@@ -76,19 +70,12 @@
     transform: translateY(3px); }
     .btn:disabled { background: #7f8c8d; border-bottom: 3px solid #555; opacity: 0.5;
     }
-    .close-modal { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px;
+    .close-modal-btn { width: 100%; background: #c0392b; border-bottom: 4px solid #922b21; padding: 15px; font-size: 18px; margin-top: 20px;
     }
     
     /* DEATH MENU SPECIFIC */
     #death-screen { background: rgba(192, 57, 43, 0.95);
     border-color: #e74c3c; width: 90%; max-width: 400px; }
-    
-    /* FULL MAP MODAL */
-    #map-modal { max-width: 90vw;
-    max-height: 90vh; width: auto; height: auto; padding: 10px; }
-    #fullMapCanvas { border: 2px solid #fff; background: #000;
-    }
-
 </style>
 </head>
 <body>
@@ -112,7 +99,6 @@
     </div>
     
     <div class="top-right-ui">
-        <div id="map-btn" onclick="showFullMapModal()">🔍</div>
         <div id="menu-btn">⚙️</div>
     </div>
 
@@ -144,14 +130,7 @@
     <div class="craft-row"><div>⛏️ <strong>PIOCHE</strong> <small id="pick-lvl-menu">Niv 1</small><br><span class="cost" id="pick-cost">...</span></div><button class="btn" id="btn-pick" onclick="game.craft('pick')">UP</button></div>
     <div class="craft-row"><div>⚔️ <strong>ÉPÉE</strong> <small id="sword-lvl-menu">Niv 1</small><br><span class="cost" id="sword-cost">...</span></div><button class="btn" id="btn-sword" onclick="game.craft('sword')">UP</button></div>
 
-    <button class="btn close-modal" onclick="document.getElementById('craft-menu').style.display='none'">RETOUR JEU</button>
-</div>
-
-<div id="map-modal" class="modal">
-    <h2>🗺️ CARTE DU MONDE (4000x5000)</h2>
-    
-    <canvas id="fullMapCanvas" width="500" height="625"></canvas>
-    <button class="btn close-modal" onclick="document.getElementById('map-modal').style.display='none'">FERMER CARTE</button>
+    <button class="btn close-modal-btn" onclick="closeModal('craft-menu')">RETOUR JEU</button>
 </div>
 
 <div id="death-screen" class="modal">
@@ -166,16 +145,17 @@
 
 <script>
 /**
- * SURVIVAL RPG ULTIMATE V9 - Zone Sécurisée & Carte Complète
+ * SURVIVAL RPG ULTIMATE V10 - Monde 6000x6000 & Menu Amélioré
  */
 
 // --- CONSTANTES & PALETTE (Pixel Art Data) ---
-const WORLD_W = 4000;
-// MODIFIÉ: 4000 -> 5000
-const WORLD_H = 5000;
+// MODIFIÉ: 4000 -> 6000
+const WORLD_W = 6000;
+// MODIFIÉ: 5000 -> 6000
+const WORLD_H = 6000;
 const SCALE_BASE = 4; // Taille d'un pixel dans le jeu
-const SAFE_ZONE_X = 500;
-// Nouvelle zone sans mobs de 0 à 500 X
+// MODIFIÉ: 500 -> 2000 (Nouvelle zone sécurisée)
+const SAFE_ZONE_X = 2000; 
 
 const PALETTE = [
     'rgba(0,0,0,0)', '#000000', '#FFFFFF', '#8b4513', '#2ecc71', 
@@ -251,10 +231,14 @@ const PIXEL_ASSETS = {
 };
 // --- BIOMES, QUESTS, VARIABLES ---
 const BIOMES = { 
-    FOREST:{start:0,end:1000,color:'#27ae60',ground:'#2ecc71',asset:'TREE', mapColor: PALETTE[12]}, 
-    DESERT:{start:1000,end:2000,color:'#e67e22',ground:'#f1c40f',asset:'ROCK_GOLD', mapColor: PALETTE[7]}, 
-    SNOW:{start:2000,end:3000,color:'#bdc3c7',ground:'#ecf0f1',asset:'IRON_ROCK', mapColor: PALETTE[8]}, 
-    VOLCANO:{start:3000,end:4000,color:'#c0392b',ground:'#2c0505',asset:'RUBY', mapColor: PALETTE[6]} 
+    // MODIFIÉ: 0,1000 -> 0,2000
+    FOREST:{start:0,end:2000,color:'#27ae60',ground:'#2ecc71',asset:'TREE', mapColor: PALETTE[12]}, 
+    // MODIFIÉ: 1000,2000 -> 2000,4000
+    DESERT:{start:2000,end:4000,color:'#e67e22',ground:'#f1c40f',asset:'ROCK_GOLD', mapColor: PALETTE[7]}, 
+    // MODIFIÉ: 2000,3000 -> 4000,5000
+    SNOW:{start:4000,end:5000,color:'#bdc3c7',ground:'#ecf0f1',asset:'IRON_ROCK', mapColor: PALETTE[8]}, 
+    // MODIFIÉ: 3000,4000 -> 5000,6000
+    VOLCANO:{start:5000,end:6000,color:'#c0392b',ground:'#2c0505',asset:'RUBY', mapColor: PALETTE[6]} 
 };
 const QUESTS = [ 
     { id: 0, txt: "Récolter 10 BOIS", type: 'wood', target: 10 },
@@ -276,8 +260,9 @@ const QUESTS = [
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
-const mapCanvas = document.getElementById('fullMapCanvas');
-const ctxMap = mapCanvas.getContext('2d');
+// SUPPRIMÉ: Map canvas et contexte
+// const mapCanvas = document.getElementById('fullMapCanvas');
+// const ctxMap = mapCanvas.getContext('2d');
 
 let isGameRunning = true;
 let lastTime = 0;
@@ -321,37 +306,35 @@ function drawPixelArt(assetName, x, y, scale = SCALE_BASE) {
 // --- WORLD GEN (Mobs réduits et Zone Sécurisée) ---
 function generateWorld() {
     game.objects = [];
-    // MODIFIÉ: Ajout de 'maxY' qui par défaut est WORLD_H (5000)
     const spawn = (type, minX, maxX, count, maxY = WORLD_H) => {
         for(let i=0; i<count; i++) {
             let x = minX + Math.random()*(maxX-minX);
-            // MODIFIÉ: Utilisation de maxY
             let y = Math.random()*maxY;
             createObject(type, x, y);
         }
     };
-    // 1. FOREST (X=0 à 1000) : Ressources limitées à Y=2000, sans mobs
-    // MODIFIÉ: Ajout de '2000'
-    spawn('tree', 0, 1000, 120, 2000);
-    // MODIFIÉ: Ajout de '2000'
-    spawn('stone', 0, 1000, 60, 2000);
-    // spawn('slime', SAFE_ZONE_X, 1000, 10); // SUPPRIMÉ: Plus de mobs Slime dans la zone Forêt
+    // 1. FOREST (X=0 à 2000, Y=0 à 2000) : Sans mobs
+    // MODIFIÉ: X max 2000, Y max 2000
+    spawn('tree', 0, 2000, 200, 2000); // Augmenté pour la zone 2000x2000
+    spawn('stone', 0, 2000, 100, 2000); // Augmenté pour la zone 2000x2000
+    // PAS DE MOBS
     
-    // 2. DESERT (Mobs réduits de 50%)
-    spawn('gold_rock', 1000, 2000, 40);
-    spawn('scorpion', 1000, 2000, 15); // Mobs: 15 (au lieu de 30)
+    // 2. DESERT (X=2000 à 4000)
+    spawn('gold_rock', 2000, 4000, 80); // Ajusté pour 2000 de large
+    spawn('scorpion', 2000, 4000, 30); // Ajusté pour 2000 de large
     
-    // 3. SNOW (Mobs réduits de 50%)
-    spawn('iron_rock', 2000, 3000, 50);
-    spawn('wolf', 2000, 3000, 18); // Mobs: 18 (au lieu de 35)
+    // 3. SNOW (X=4000 à 5000)
+    spawn('iron_rock', 4000, 5000, 50);
+    spawn('wolf', 4000, 5000, 18);
     
-    // 4. VOLCANO (Mobs réduits de 50%)
-    spawn('ruby', 3000, 4000, 30);
-    spawn('demon', 3000, 4000, 12); // Mobs: 12 (au lieu de 25)
+    // 4. VOLCANO (X=5000 à 6000)
+    spawn('ruby', 5000, 6000, 30);
+    spawn('demon', 5000, 6000, 12);
     
     // BOSS FINAL
-    createObject('boss', 3800, 2000);
-    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 3800+Math.cos(a)*400, 2000+Math.sin(a)*400);
+    // MODIFIÉ: 5800, 3000 (Centre de la zone Volcan)
+    createObject('boss', 5800, 3000);
+    for(let a=0; a<Math.PI*2; a+=0.5) createObject('wall', 5800+Math.cos(a)*400, 3000+Math.sin(a)*400);
 }
 
 function createObject(type, x, y) {
@@ -400,10 +383,6 @@ function loop(time) {
         return;
     }
 
-    // SUPPRIMÉ: Ligne de sauvegarde automatique
-    // saveTimer += dt;
-    // if(saveTimer > 10000) { saveGame(); saveTimer = 0; }
-
     requestAnimationFrame(loop);
 }
 
@@ -413,17 +392,17 @@ function update(dt) {
         let angle = game.player.angle;
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
         let ny = game.player.y + Math.sin(angle) * game.player.speed;
-        // WORLD_H est maintenant 5000
+        // WORLD_H est maintenant 6000
         nx = Math.max(0, Math.min(WORLD_W, nx));
         ny = Math.max(0, Math.min(WORLD_H, ny));
         let collide = game.objects.some(o => o.solid && Math.hypot(nx-o.x, ny-o.y) < game.player.size + o.size/2);
         if(!collide) { game.player.x = nx;
         game.player.y = ny; }
         
-        // Quest Check
-        if(nx > 1000 && nx < 2000) checkQuest('explore_desert', 1);
-        if(nx > 2000 && nx < 3000) checkQuest('explore_snow', 1);
-        if(nx > 3000) checkQuest('explore_volcano', 1);
+        // Quest Check - MODIFIÉ pour 6000 de large
+        if(nx > 2000 && nx < 4000) checkQuest('explore_desert', 1);
+        if(nx > 4000 && nx < 5000) checkQuest('explore_snow', 1);
+        if(nx > 5000) checkQuest('explore_volcano', 1);
     }
     
     // Camera, Mobs, Healing, DayCycle... (Logic from V8)
@@ -458,54 +437,8 @@ function update(dt) {
     game.dayTime += 0.0005;
     if(game.dayTime > 1) game.dayTime = 0;
 } 
-// --- RENDU CARTE COMPLÈTE (NOUVEAU) ---
-function showFullMapModal() {
-    document.getElementById('map-modal').style.display = 'block';
-    
-    // Mise à jour pour 4000x5000
-    const w = 500;
-    const h = 625;
-    const mapRatio = WORLD_W / w;
-    const scale = w / WORLD_W; // (500 / 4000)
-    
-    ctxMap.clearRect(0, 0, w, h);
-    
-    // Dessin des BIOMES
-    for(let i=0; i<w; i++) {
-        const worldX = i * mapRatio;
-        let color = '#2c3e50';
-        for(let biome in BIOMES) {
-            if(worldX >= BIOMES[biome].start && worldX < BIOMES[biome].end) {
-                color = BIOMES[biome].mapColor;
-                break;
-            }
-        }
-        ctxMap.fillStyle = color;
-        ctxMap.fillRect(i, 0, 1, h); // Dessiner une colonne verticale pour le biome.
-    }
-    
-    // Dessin des RESSOURCES et MOBS
-    for (let o of game.objects) {
-        if (o.type === 'wall' || o.hp <= 0) continue;
-        ctxMap.fillStyle = o.mapDotColor; // Dessiner en petit cercle pour les ressources/mobs
-        ctxMap.beginPath();
-        ctxMap.arc(o.x * scale, o.y * scale, o.isBoss ? 4 : 2, 0, Math.PI * 2);
-        ctxMap.fill();
-    }
-    // Dessin de la MAISON
-    if (game.house.active) {
-        ctxMap.fillStyle = 'lime';
-        ctxMap.fillRect(game.house.x * scale - 3, game.house.y * scale - 3, 6, 6);
-    }
-    // Dessin du JOUEUR
-    ctxMap.fillStyle = 'red';
-    ctxMap.beginPath();
-    ctxMap.arc(game.player.x * scale, game.player.y * scale, 5, 0, Math.PI * 2);
-    ctxMap.fill();
-    ctxMap.strokeStyle = 'white';
-    ctxMap.lineWidth = 1;
-    ctxMap.stroke();
-}
+// --- RENDU CARTE COMPLÈTE (SUPPRIMÉ) ---
+// function showFullMapModal() { ... }
 // --- ACTIONS & UI (Unchanged logic) ---
 function handleAction() {
     let t = getNearestTarget();
@@ -664,6 +597,9 @@ function updateUI() {
 function createFloatText(txt, x, y, color) {
     game.particles.push({ txt, x, y, color, dy:-2, life:40});
 }
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
 // --- DEATH / SAVE / LOAD / INPUTS (Unchanged logic) ---
 function showDeathScreen() {
     isGameRunning = false;
@@ -688,7 +624,7 @@ window.deathMenuAction = (action) => {
     } else if (action === 'respawn') {
         if (!document.getElementById('btn-respawn').disabled) {
             loadGame(true);
-            document.getElementById('death-screen').style.display = 'none';
+            closeModal('death-screen'); // Utilisation de closeModal
             isGameRunning = true;
             requestAnimationFrame(loop);
         }
@@ -698,7 +634,6 @@ function saveGame() {
     // La sauvegarde est conservée pour le respawn
     const data = { p: {x:game.player.x, y:game.player.y, hp:game.player.hp, max:game.player.maxHp}, inv: game.inv, house: game.house, quest: game.quest, objs: game.objects.filter(o => o.type==='wall' || (o.isBoss && o.hp<o.maxHp)) };
     localStorage.setItem('rpg_save_v7', JSON.stringify(data));
-    // SUPPRIMÉ: Logique de notification de sauvegarde automatique
 }
 function loadGame(isRespawn = false) {
     const raw = localStorage.getItem('rpg_save_v7');
@@ -750,6 +685,7 @@ function setupInputs() {
     const stick = document.getElementById('joystick-stick');
     const actionBtn = document.getElementById('action-btn');
     const menuBtn = document.getElementById('menu-btn');
+    const craftMenu = document.getElementById('craft-menu');
     
     const moveJoystick = (e) => {
         const touch = e.touches[0];
@@ -789,9 +725,21 @@ function setupInputs() {
     actionBtn.addEventListener('touchstart', e=>{ e.preventDefault(); handleAction(); });
     actionBtn.addEventListener('mousedown', e=>{ e.preventDefault(); handleAction(); });
     
+    // Ouvre le menu d'artisanat
     menuBtn.addEventListener('click', () => {
-        document.getElementById('craft-menu').style.display = 'block';
+        craftMenu.style.display = 'block';
         updateUI();
+    });
+    
+    // Ferme le menu si on clique en dehors
+    document.addEventListener('click', (e) => {
+        const isMenuOpen = craftMenu.style.display === 'block';
+        const isClickOutsideMenu = !craftMenu.contains(e.target);
+        const isNotMenuButton = e.target.id !== 'menu-btn';
+        
+        if (isMenuOpen && isClickOutsideMenu && isNotMenuButton) {
+            closeModal('craft-menu');
+        }
     });
 }
 
