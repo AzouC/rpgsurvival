@@ -325,8 +325,7 @@ function loop(time) {
 function update(dt) {
     // Player Move
     if(joy.active) {
-        // game.player.angle est mis à jour dans moveJoystick, mais nous l'avons retiré pour stopper la rotation.
-        let angle = game.player.angle; // Utilise le dernier angle, même s'il n'est plus mis à jour
+        let angle = game.player.angle; // L'angle a été mis à jour dans moveJoystick
         let nx = game.player.x + Math.cos(angle) * game.player.speed;
         let ny = game.player.y + Math.sin(angle) * game.player.speed;
         nx = Math.max(0, Math.min(WORLD_W, nx));
@@ -424,16 +423,46 @@ function getPlayerAsset() {
 
 function drawPlayer(x, y) {
     const asset = getPlayerAsset();
-    
-    // Rotation retirée pour que le joueur ne tourne plus sur lui-même
-    drawPixelArt(asset, x, y);
+    const assetData = PIXEL_ASSETS[asset];
+    const scale = SCALE_BASE;
+    const assetSize = assetData.length;
+    const halfSize = (assetSize * scale) / 2;
 
-    // Iframes feedback
-    if (game.player.iframes % 4 < 2) {
-        ctx.globalAlpha = 0.4;
-        drawPixelArt(asset, x, y);
-        ctx.globalAlpha = 1;
+    ctx.save();
+    
+    // 1. Déplacer l'origine au centre du joueur (x, y)
+    ctx.translate(x, y);
+    
+    // 2. Appliquer la rotation. +Math.PI/2 car l'asset est orienté par défaut vers le haut.
+    ctx.rotate(game.player.angle + Math.PI / 2);
+
+    // 3. Dessiner l'asset centré sur la nouvelle origine (0,0)
+    
+    // Check for iframes blink
+    const isBlinking = game.player.iframes > 0 && (game.player.iframes % 4 < 2);
+    
+    // Main drawing loop
+    for (let r = 0; r < assetSize; r++) {
+        for (let c = 0; c < assetSize; c++) {
+            const colorIndex = assetData[r][c];
+            if (colorIndex !== 0) {
+                ctx.fillStyle = PALETTE[colorIndex] || '#FF00FF';
+                // Calcul des coordonnées par rapport au centre (0,0)
+                const drawX = (c * scale) - halfSize;
+                const drawY = (r * scale) - halfSize;
+                
+                // Apply blink effect using globalAlpha
+                if (isBlinking) ctx.globalAlpha = 0.4;
+                else ctx.globalAlpha = 1;
+                
+                ctx.fillRect(drawX, drawY, scale, scale);
+            }
+        }
     }
+    
+    // Reset alpha and restore the canvas state
+    ctx.globalAlpha = 1;
+    ctx.restore();
 }
 
 function getBiome(x) {
@@ -709,7 +738,8 @@ function setupInputs() {
         stick.style.left = `${stickX}px`;
         stick.style.top = `${stickY}px`;
         
-        // Ligne DELETED : game.player.angle = angle;
+        // CORRECTION: Réactive la rotation du personnage
+        game.player.angle = angle;
         game.player.moving = true;
     };
     
