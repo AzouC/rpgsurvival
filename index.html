@@ -3,271 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamble Pro Hub</title>
+    <title>Casino Royal - Roulette Complète</title>
     <style>
-        :root {
-            --gold: #D4AF37;
-            --dark-green: #064E3B;
-            --bg-dark: #121212;
-        }
+        :root { --gold: #D4AF37; --green: #064E3B; --red: #d00; --black: #111; }
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; margin: 0; padding-bottom: 50px; }
+        
+        .header { background: #1e1e1e; padding: 20px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .balance { font-size: 1.8rem; color: var(--gold); font-weight: bold; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
+        /* ROUE */
+        .wheel-box { position: relative; display: inline-block; margin: 20px 0; }
+        .arrow { width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 35px solid var(--gold); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
+        canvas { border-radius: 50%; border: 8px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
 
-        /* Barre supérieure fixe */
-        .top-bar {
-            background: #1e1e1e;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--gold);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+        /* TAPIS DE MISE */
+        .betting-table { max-width: 600px; margin: 20px auto; background: var(--green); padding: 15px; border-radius: 10px; border: 3px solid #043a2c; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .bet-zone { background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .bet-zone:hover { background: rgba(212, 175, 55, 0.2); }
+        .bet-zone.selected { background: var(--gold); color: black; font-weight: bold; }
+        
+        .zone-red { border-left: 8px solid var(--red); }
+        .zone-black { border-left: 8px solid var(--black); }
 
-        .balance-box {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--gold);
-        }
+        /* CONTROLES */
+        .controls { margin: 20px; }
+        .btn-spin { background: var(--gold); border: none; padding: 15px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 0 #92400e; }
+        .btn-spin:disabled { background: #555; box-shadow: none; transform: translateY(4px); }
+        input { padding: 10px; border-radius: 5px; border: none; width: 80px; font-size: 1.1rem; text-align: center; }
 
-        .home-btn {
-            background: var(--gold);
-            color: black;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Menu Principal (Lobby) */
-        #lobby {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 40px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .game-card {
-            background: #1e1e1e;
-            border: 2px solid #333;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-
-        .game-card:hover {
-            border-color: var(--gold);
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-        }
-
-        .game-card h2 { color: var(--gold); margin: 10px 0; }
-        .icon { font-size: 4rem; }
-
-        /* Écrans de jeux */
-        .game-screen {
-            display: none;
-            padding: 20px;
-            text-align: center;
-            animation: fadeIn 0.5s;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Styles Roulette */
-        #wheelCanvas { border: 8px solid #444; border-radius: 50%; background: #000; }
-        .arrow { width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 30px solid var(--gold); margin: 0 auto; margin-bottom: -10px; position: relative; z-index: 5; }
-
-        /* Boutons et Inputs */
-        .btn { background: var(--gold); color: black; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
-        input { padding: 10px; border-radius: 5px; border: 1px solid var(--gold); background: #000; color: white; width: 60px; text-align: center; margin: 0 10px; }
-
-        #result { font-size: 1.4rem; margin-top: 20px; color: var(--gold); min-height: 40px; }
+        #status { font-size: 1.5rem; margin-top: 20px; color: var(--gold); font-weight: bold; min-height: 40px; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <button class="home-btn" onclick="showLobby()">🏠 MENU PRINCIPAL</button>
-        <div class="balance-box">💰 <span id="balance">1000</span> $</div>
+    <div class="header">
+        <div>🎰 ROULETTE ELITE</div>
+        <div class="balance">💰 <span id="balance">1000</span> $</div>
     </div>
 
-    <div id="lobby">
-        <div class="game-card" onclick="launchGame('roulette')">
-            <div class="icon">🔴</div>
-            <h2>ROULETTE</h2>
-            <p>Le classique européen. Tentez le 36x !</p>
-        </div>
-        <div class="game-card" onclick="launchGame('blackjack')">
-            <div class="icon">🃏</div>
-            <h2>BLACKJACK</h2>
-            <p>Battez la banque sans dépasser 21.</p>
-        </div>
-        <div class="game-card" onclick="launchGame('crash')">
-            <div class="icon">🚀</div>
-            <h2>CRASH</h2>
-            <p>Encaissez avant que la courbe n'explose !</p>
-        </div>
-    </div>
-
-    <div id="roulette-screen" class="game-screen">
-        <h2>ROULETTE EUROPÉENNE</h2>
+    <div class="wheel-box">
         <div class="arrow"></div>
-        <canvas id="wheelCanvas" width="350" height="350"></canvas>
-        <div class="controls">
-            <p>Mise : <input type="number" id="betR" value="10"> | Numéro : <input type="number" id="numR" value="7" min="0" max="36"></p>
-            <button class="btn" id="btnR" onclick="spinRoulette()">LANCER LA ROUE</button>
-        </div>
-        <div id="resR" class="result"></div>
+        <canvas id="wheelCanvas" width="360" height="360"></canvas>
     </div>
 
-    <div id="blackjack-screen" class="game-screen">
-        <h2>BLACKJACK QUICK-PLAY</h2>
-        <div style="background: var(--dark-green); padding: 40px; border-radius: 20px; max-width: 500px; margin: 0 auto; border: 2px solid var(--gold);">
-            <div id="bj-table" style="font-size: 1.5rem; margin-bottom: 20px;">Appuyez sur "Distribuer"</div>
-            <p>Mise : <input type="number" id="betBJ" value="50"></p>
-            <button class="btn" onclick="playBJ()">DISTRIBUER</button>
-        </div>
-        <div id="resBJ" class="result"></div>
+    <div id="status">Sélectionnez une zone et misez !</div>
+
+    <div class="controls">
+        Mise : <input type="number" id="betAmount" value="50" min="1">
+        <br><br>
+        <button class="btn-spin" id="spinBtn" onclick="spin()">LANCER LA ROUE</button>
     </div>
 
-    <div id="crash-screen" class="game-screen">
-        <h2>CRASH GAME</h2>
-        <p>Bientôt disponible...</p>
+    <div class="betting-table">
+        <div class="bet-zone" onclick="selectBet('NUM', this)">Numéro : <input type="number" id="specificNum" value="7" min="0" max="36" style="width: 40px; padding: 2px;"></div>
+        <div class="bet-zone zone-red" onclick="selectBet('RED', this)">ROUGE (x2)</div>
+        <div class="bet-zone zone-black" onclick="selectBet('BLACK', this)">NOIR (x2)</div>
+        <div class="bet-zone" onclick="selectBet('PAIR', this)">PAIR (x2)</div>
+        <div class="bet-zone" onclick="selectBet('IMPAIR', this)">IMPAIR (x2)</div>
+        <div class="bet-zone" onclick="selectBet('12P', this)">1ère Douz. (x3)</div>
+        <div class="bet-zone" onclick="selectBet('12M', this)">2ème Douz. (x3)</div>
+        <div class="bet-zone" onclick="selectBet('12D', this)">3ème Douz. (x3)</div>
+        <div class="bet-zone" onclick="selectBet('ZERO', this)">ZÉRO (x36)</div>
     </div>
 
     <script>
         let balance = 1000;
+        let selectedType = null;
+        let currentAngle = 0;
         const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-        let wheelAngle = 0;
 
-        // Navigation
-        function showLobby() {
-            document.querySelectorAll('.game-screen').forEach(s => s.style.display = 'none');
-            document.getElementById('lobby').style.display = 'grid';
+        function selectBet(type, element) {
+            document.querySelectorAll('.bet-zone').forEach(z => z.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedType = type;
         }
 
-        function launchGame(gameId) {
-            document.getElementById('lobby').style.display = 'none';
-            document.getElementById(gameId + '-screen').style.display = 'block';
-            if(gameId === 'roulette') drawWheel();
-        }
-
-        // --- LOGIQUE ROULETTE ---
         function drawWheel() {
             const canvas = document.getElementById("wheelCanvas");
             const ctx = canvas.getContext("2d");
             const r = canvas.width / 2;
             const step = (Math.PI * 2) / 37;
 
-            ctx.clearRect(0,0,350,350);
-            ctx.save();
-            ctx.translate(r, r);
-            ctx.rotate(wheelAngle);
-            ctx.translate(-r, -r);
+            ctx.clearRect(0,0,360,360);
+            ctx.save(); ctx.translate(r,r); ctx.rotate(currentAngle); ctx.translate(-r,-r);
 
             for (let i = 0; i < 37; i++) {
                 ctx.beginPath();
                 ctx.fillStyle = numbers[i] === 0 ? "#008000" : (i % 2 === 0 ? "#000" : "#d00");
-                ctx.moveTo(r, r);
-                ctx.arc(r, r, r, i * step, (i + 1) * step);
-                ctx.fill();
-                ctx.save();
-                ctx.translate(r, r);
-                ctx.rotate(i * step + step / 2);
-                ctx.fillStyle = "white";
-                ctx.font = "bold 12px Arial";
-                ctx.fillText(numbers[i], r - 25, 5);
+                ctx.moveTo(r, r); ctx.arc(r, r, r, i * step, (i + 1) * step); ctx.fill();
+                ctx.save(); ctx.translate(r,r); ctx.rotate(i*step + step/2);
+                ctx.fillStyle = "white"; ctx.font = "bold 13px Arial"; ctx.fillText(numbers[i], r-28, 5);
                 ctx.restore();
             }
             ctx.restore();
         }
 
-        function spinRoulette() {
-            const bet = parseInt(document.getElementById('betR').value);
-            if(bet > balance) return alert("Fonds insuffisants");
-            balance -= bet; updateUI();
-            
-            document.getElementById('btnR').disabled = true;
-            let start = null;
-            const duration = 4000;
-            const rotations = (Math.PI * 2) * (5 + Math.random() * 5);
-            const initialAngle = wheelAngle;
+        function spin() {
+            if(!selectedType) return alert("Choisissez une zone de mise !");
+            const bet = parseInt(document.getElementById('betAmount').value);
+            if(bet > balance) return alert("Solde insuffisant");
 
-            function anim(time) {
-                if(!start) start = time;
+            balance -= bet;
+            document.getElementById('balance').innerText = balance;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('status').innerText = "Rien ne va plus...";
+
+            const duration = 5000;
+            const rotations = (Math.PI * 2) * (6 + Math.random() * 4);
+            const start = performance.now();
+            const initialAngle = currentAngle;
+
+            function animate(time) {
                 let progress = (time - start) / duration;
                 if(progress > 1) progress = 1;
                 let ease = 1 - Math.pow(1 - progress, 3);
-                wheelAngle = initialAngle + (rotations * ease);
+                currentAngle = initialAngle + (rotations * ease);
                 drawWheel();
-                if(progress < 1) requestAnimationFrame(anim);
-                else finalizeRoulette(bet);
+                if(progress < 1) requestAnimationFrame(animate);
+                else finalize(bet);
             }
-            requestAnimationFrame(anim);
+            requestAnimationFrame(animate);
         }
 
-        function finalizeRoulette(bet) {
-            let angleNormalized = (wheelAngle % (Math.PI * 2));
+        function finalize(bet) {
             let step = (Math.PI * 2) / 37;
-            let index = Math.floor(((Math.PI * 1.5) - angleNormalized) / step) % 37;
+            let normalized = (currentAngle % (Math.PI * 2));
+            let index = Math.floor(((Math.PI * 1.5) - normalized) / step) % 37;
             if(index < 0) index += 37;
             
             let winNum = numbers[index];
-            let target = parseInt(document.getElementById('numR').value);
-            
-            if(winNum === target) {
-                balance += bet * 36;
-                document.getElementById('resR').innerHTML = `<span style="color:#4ade80">Gagné ! Le ${winNum} (+${bet*36}$)</span>`;
+            let winColor = (winNum === 0) ? "GREEN" : (index % 2 === 0 ? "BLACK" : "RED");
+            let multiplier = 0;
+
+            // Vérification des gains
+            if (selectedType === 'RED' && winColor === 'RED') multiplier = 2;
+            else if (selectedType === 'BLACK' && winColor === 'BLACK') multiplier = 2;
+            else if (selectedType === 'PAIR' && winNum !== 0 && winNum % 2 === 0) multiplier = 2;
+            else if (selectedType === 'IMPAIR' && winNum % 2 !== 0) multiplier = 2;
+            else if (selectedType === '12P' && winNum >= 1 && winNum <= 12) multiplier = 3;
+            else if (selectedType === '12M' && winNum >= 13 && winNum <= 24) multiplier = 3;
+            else if (selectedType === '12D' && winNum >= 25 && winNum <= 36) multiplier = 3;
+            else if (selectedType === 'ZERO' && winNum === 0) multiplier = 36;
+            else if (selectedType === 'NUM' && winNum === parseInt(document.getElementById('specificNum').value)) multiplier = 36;
+
+            if (multiplier > 0) {
+                let gain = bet * multiplier;
+                balance += gain;
+                document.getElementById('status').innerHTML = `<span style="color:#4ade80">GAGNÉ ! Le ${winNum} (${winColor}) : +${gain}$</span>`;
             } else {
-                document.getElementById('resR').innerText = `Le ${winNum} est sorti.`;
+                document.getElementById('status').innerHTML = `<span style="color:#f87171">PERDU : Le ${winNum} (${winColor})</span>`;
             }
-            document.getElementById('btnR').disabled = false;
-            updateUI();
-        }
 
-        // --- LOGIQUE BLACKJACK ---
-        function playBJ() {
-            const bet = parseInt(document.getElementById('betBJ').value);
-            if(bet > balance) return alert("Fonds insuffisants");
-            balance -= bet;
-
-            let p = Math.floor(Math.random()*10) + 13;
-            let b = Math.floor(Math.random()*10) + 13;
-            let table = document.getElementById('bj-table');
-            
-            table.innerHTML = `Moi : <b>${p}</b> | Banque : <b>${b}</b>`;
-            if(p > 21) {
-                document.getElementById('resBJ').innerText = "BUST ! Dépassé 21.";
-            } else if (b > 21 || p > b) {
-                balance += bet * 2;
-                document.getElementById('resBJ').innerHTML = "<span style='color:#4ade80'>VICTOIRE !</span>";
-            } else if (p === b) {
-                balance += bet;
-                document.getElementById('resBJ').innerText = "ÉGALITÉ.";
-            } else {
-                document.getElementById('resBJ').innerText = "LA BANQUE GAGNE.";
-            }
-            updateUI();
-        }
-
-        function updateUI() {
             document.getElementById('balance').innerText = balance;
+            document.getElementById('spinBtn').disabled = false;
         }
+
+        drawWheel();
     </script>
 </body>
 </html>
