@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamble Elite Hub</title>
+    <title>Gamble Elite - Fixed Blackjack</title>
     <style>
         :root { --gold: #D4AF37; --green: #064E3B; --red: #d00; --black: #111; --bg: #0f172a; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
         
-        /* Navbar */
         .navbar { background: #1e293b; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
         .balance { font-size: 1.5rem; color: var(--gold); font-weight: bold; }
         .nav-btn { background: var(--gold); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* Screens */
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s; }
         #lobby { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 40px; max-width: 900px; margin: 0 auto; }
         .game-card { background: #1e1e1e; border: 2px solid #333; border-radius: 15px; padding: 20px; cursor: pointer; }
@@ -28,16 +26,18 @@
         .zone.active { border-color: white; background: var(--gold); color: black; }
 
         /* BLACKJACK STYLES */
-        .table { background: var(--green); border-radius: 100px 100px 20px 20px; padding: 40px 20px; border: 10px solid #3e2723; max-width: 600px; margin: 0 auto; }
+        .table { background: var(--green); border-radius: 100px 100px 20px 20px; padding: 30px 20px; border: 8px solid #3e2723; max-width: 550px; margin: 0 auto; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .hand { display: flex; justify-content: center; gap: 10px; min-height: 100px; margin: 10px 0; }
-        .card { background: white; color: black; width: 50px; height: 75px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border: 1px solid #999; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
-        .back { background: #d00; color: #d00; }
-        .score { font-size: 1rem; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 10px; display: inline-block; margin: 5px; }
+        .card { background: white; color: black; width: 55px; height: 85px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; border: 1px solid #999; box-shadow: 2px 2px 5px rgba(0,0,0,0.4); animation: deal 0.3s ease; }
+        .card.back { background: linear-gradient(45deg, #d00, #900); color: transparent; border: 2px solid white; }
+        @keyframes deal { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .score { font-size: 1rem; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px; display: inline-block; margin: 10px; border: 1px solid var(--gold); }
 
-        .btn { background: var(--gold); border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; }
-        .btn:disabled { background: #555; opacity: 0.5; }
-        input { background: #000; color: white; border: 1px solid var(--gold); padding: 8px; border-radius: 5px; width: 70px; text-align: center; }
-        .status { font-size: 1.3rem; height: 35px; color: var(--gold); margin: 15px; }
+        .btn { background: var(--gold); border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; box-shadow: 0 3px 0 #92400e; }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn:disabled { background: #555; box-shadow: none; opacity: 0.6; }
+        input { background: #000; color: white; border: 1px solid var(--gold); padding: 8px; border-radius: 5px; width: 80px; text-align: center; font-weight: bold; }
+        .status { font-size: 1.4rem; height: 40px; color: var(--gold); margin: 15px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -48,8 +48,8 @@
     </div>
 
     <div id="lobby" class="screen" style="display: grid;">
-        <div class="game-card" onclick="showScreen('roulette')"><h2>🎡 ROULETTE PRO</h2></div>
-        <div class="game-card" onclick="showScreen('blackjack')"><h2>🃏 BLACKJACK</h2></div>
+        <div class="game-card" onclick="showScreen('roulette')"><h2>🎡 ROULETTE PRO</h2><p>Misez sur les numéros ou couleurs</p></div>
+        <div class="game-card" onclick="showScreen('blackjack')"><h2>🃏 BLACKJACK</h2><p>Battez la banque à 21</p></div>
     </div>
 
     <div id="roulette" class="screen">
@@ -74,18 +74,18 @@
         <div class="table">
             <div class="score">Banque: <span id="d-score">?</span></div>
             <div id="d-hand" class="hand"></div>
-            <hr style="border: 1px dashed rgba(255,255,255,0.1)">
+            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.2); margin: 20px 0;">
             <div id="p-hand" class="hand"></div>
-            <div class="score">Joueur: <span id="p-score">0</span></div>
+            <div class="score">Mon Score: <span id="p-score">0</span></div>
         </div>
         <div id="bj-ctrl-init" style="margin-top:20px;">
             Mise : <input type="number" id="betBJ" value="50">
             <button class="btn" onclick="startBJ()">DISTRIBUER</button>
         </div>
         <div id="bj-ctrl-play" style="display:none; margin-top:20px;">
-            <button class="btn" onclick="hit()">TIRER</button>
-            <button class="btn" onclick="stand()">RESTER</button>
-            <button class="btn" id="db-btn" onclick="doubleDown()">DOUBLER</button>
+            <button class="btn" onclick="hit()">TIRER (HIT)</button>
+            <button class="btn" onclick="stand()">RESTER (STAND)</button>
+            <button class="btn" id="db-btn" onclick="doubleDown()">DOUBLER (x2)</button>
         </div>
     </div>
 
@@ -153,66 +153,86 @@
             document.getElementById('spinBtn').disabled = false; updateUI();
         }
 
-        // --- BLACKJACK ---
+        // --- BLACKJACK CORRIGÉ ---
         let pH = [], dH = [], bjBet = 0, over = true;
+        
         function getCard() {
-            const v = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-            const n = [2,3,4,5,6,7,8,9,10,10,10,10,11];
-            let r = Math.floor(Math.random()*v.length);
-            return { name: v[r], val: n[r] };
+            const names = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+            const vals = [2,3,4,5,6,7,8,9,10,10,10,10,11];
+            let r = Math.floor(Math.random()*names.length);
+            return { n: names[r], v: vals[r] };
         }
+
         function getScore(h) {
-            let s = h.reduce((a,c)=>a+c.val, 0);
-            let aces = h.filter(c=>c.name==='A').length;
-            while(s>21 && aces>0) { s-=10; aces--; }
+            let s = h.reduce((a,c)=>a+c.v, 0);
+            let aces = h.filter(c=>c.n==='A').length;
+            while(s > 21 && aces > 0) { s -= 10; aces--; }
             return s;
         }
+
         function startBJ() {
             bjBet = parseInt(document.getElementById('betBJ').value);
-            if(bjBet > balance) return alert("Pas assez de jetons");
+            if(bjBet > balance) return alert("Solde insuffisant");
             balance -= bjBet; over = false; updateUI();
             pH = [getCard(), getCard()]; dH = [getCard(), getCard()];
             document.getElementById('bj-ctrl-init').style.display='none';
             document.getElementById('bj-ctrl-play').style.display='block';
-            document.getElementById('resBJ').innerText = "À vous...";
+            document.getElementById('resBJ').innerText = "À vous de jouer...";
             renderBJ();
         }
+
         function renderBJ() {
-            const pD = document.getElementById('p-hand'); const dD = document.getElementById('d-hand');
-            pD.innerHTML = dD.innerHTML = "";
-            pH.forEach(c => pD.innerHTML += `<div class="card">${c.name}</div>`);
-            dH.forEach((c,i) => {
-                if(i===0 || !over) dD.innerHTML += `<div class="card">${c.name}</div>`;
-                else dD.innerHTML += `<div class="card back">?</div>`;
+            const pD = document.getElementById('p-hand'); 
+            const dD = document.getElementById('d-hand');
+            pD.innerHTML = ""; dD.innerHTML = ""; // Vider les mains
+            
+            // Joueur
+            pH.forEach(c => pD.innerHTML += `<div class="card">${c.n}</div>`);
+            
+            // Banque
+            dH.forEach((c, i) => {
+                if (i === 1 && !over) { // Deuxième carte cachée si jeu en cours
+                    dD.innerHTML += `<div class="card back">?</div>`;
+                } else {
+                    dD.innerHTML += `<div class="card">${c.n}</div>`;
+                }
             });
+
             document.getElementById('p-score').innerText = getScore(pH);
-            document.getElementById('d-score').innerText = over ? getScore(dH) : "?";
+            document.getElementById('d-score').innerText = over ? getScore(dH) : dH[0].v + " + ?";
         }
+
         function hit() {
             pH.push(getCard()); renderBJ();
-            if(getScore(pH) > 21) endBJ("BUST ! Perdu.");
+            if(getScore(pH) > 21) endBJ("DÉPASSÉ (BUST) ! Perdu.");
         }
+
         function stand() {
-            over = false;
-            while(getScore(dH) < 17) dH.push(getCard());
+            over = true;
+            while(getScore(dH) < 17) dH.push(getCard()); // La banque tire jusqu'à 17
             renderBJ();
-            let p = getScore(pH), d = getScore(dH);
-            if(d > 21 || p > d) endBJ("GAGNÉ !", bjBet*2);
-            else if(p === d) endBJ("ÉGALITÉ", bjBet);
+            let ps = getScore(pH), ds = getScore(dH);
+            if(ds > 21) endBJ("LA BANQUE SAUTE ! Gagné.", bjBet*2);
+            else if(ps > ds) endBJ("VOUS GAGNEZ !", bjBet*2);
+            else if(ps === ds) endBJ("ÉGALITÉ", bjBet);
             else endBJ("LA BANQUE GAGNE.");
         }
+
         function doubleDown() {
-            if(balance < bjBet) return;
+            if(balance < bjBet) return alert("Pas assez pour doubler");
             balance -= bjBet; bjBet *= 2; updateUI();
-            pH.push(getCard()); stand();
+            pH.push(getCard()); stand(); // Une seule carte et on s'arrête
         }
+
         function endBJ(m, pay=0) {
             over = true; balance += pay; updateUI(); renderBJ();
             document.getElementById('resBJ').innerText = m;
             document.getElementById('bj-ctrl-init').style.display='block';
             document.getElementById('bj-ctrl-play').style.display='none';
         }
+
         function updateUI() { document.getElementById('balance').innerText = balance; }
+        showScreen('lobby'); // Lancer sur le menu
     </script>
 </body>
 </html>
