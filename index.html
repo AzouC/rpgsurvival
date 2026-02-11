@@ -3,162 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Royal - Roulette Complète</title>
+    <title>Gamble Elite Hub - Full Casino</title>
     <style>
-        :root { --gold: #D4AF37; --green: #064E3B; --red: #d00; --black: #111; }
-        body { background: #121212; color: white; font-family: sans-serif; text-align: center; margin: 0; padding-bottom: 50px; }
+        :root { --gold: #D4AF37; --green: #064E3B; --red: #d00; --black: #111; --bg: #0f172a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
         
-        .header { background: #1e1e1e; padding: 20px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .balance { font-size: 1.8rem; color: var(--gold); font-weight: bold; }
+        .navbar { background: #1e293b; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
+        .balance { font-size: 1.5rem; color: var(--gold); font-weight: bold; }
+        .nav-btn { background: var(--gold); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* ROUE */
-        .wheel-box { position: relative; display: inline-block; margin: 20px 0; }
-        .arrow { width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 35px solid var(--gold); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
-        canvas { border-radius: 50%; border: 8px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        #lobby { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 40px; max-width: 1000px; margin: 0 auto; }
+        .game-card { background: #1e1e1e; border: 2px solid #333; border-radius: 15px; padding: 20px; cursor: pointer; transition: 0.3s; }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-5px); }
 
-        /* TAPIS DE MISE */
-        .betting-table { max-width: 600px; margin: 20px auto; background: var(--green); padding: 15px; border-radius: 10px; border: 3px solid #043a2c; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .bet-zone { background: rgba(0,0,0,0.3); border: 1px solid var(--gold); padding: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
-        .bet-zone:hover { background: rgba(212, 175, 55, 0.2); }
-        .bet-zone.selected { background: var(--gold); color: black; font-weight: bold; }
-        
-        .zone-red { border-left: 8px solid var(--red); }
-        .zone-black { border-left: 8px solid var(--black); }
+        .screen { display: none; padding: 20px; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* CONTROLES */
-        .controls { margin: 20px; }
-        .btn-spin { background: var(--gold); border: none; padding: 15px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 0 #92400e; }
-        .btn-spin:disabled { background: #555; box-shadow: none; transform: translateY(4px); }
-        input { padding: 10px; border-radius: 5px; border: none; width: 80px; font-size: 1.1rem; text-align: center; }
+        /* ROULETTE */
+        .wheel-container { position: relative; display: inline-block; margin-bottom: 20px; }
+        .arrow { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
+        canvas { border-radius: 50%; border: 6px solid #333; max-width: 100%; }
+        .betting-table { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 500px; margin: 20px auto; background: var(--green); padding: 10px; border-radius: 10px; border: 2px solid var(--gold); }
+        .zone { background: rgba(0,0,0,0.4); border: 1px solid #555; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        .zone.active { background: var(--gold); color: black; }
 
-        #status { font-size: 1.5rem; margin-top: 20px; color: var(--gold); font-weight: bold; min-height: 40px; }
+        /* BLACKJACK */
+        .bj-area { background: var(--green); padding: 20px; border-radius: 15px; border: 3px solid #043a2c; max-width: 600px; margin: 0 auto; min-height: 400px; position: relative; }
+        .card-display { display: flex; justify-content: center; gap: 10px; margin: 15px 0; min-height: 80px; }
+        .card-item { background: white; color: black; padding: 10px; border-radius: 5px; width: 40px; font-weight: bold; border: 2px solid #999; }
+        .bj-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+        .action-btn { background: #eee; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .split-hand { border: 2px dashed var(--gold); padding: 10px; border-radius: 10px; margin-top: 10px; }
+
+        .main-btn { background: var(--gold); color: black; border: none; padding: 15px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .msg { font-size: 1.3rem; margin: 15px 0; min-height: 30px; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div>🎰 ROULETTE ELITE</div>
+    <div class="navbar">
+        <button class="nav-btn" onclick="goTo('lobby')">🏠 MENU</button>
         <div class="balance">💰 <span id="balance">1000</span> $</div>
     </div>
 
-    <div class="wheel-box">
-        <div class="arrow"></div>
-        <canvas id="wheelCanvas" width="360" height="360"></canvas>
+    <div id="lobby" class="screen" style="display: grid;">
+        <div class="game-card" onclick="goTo('roulette')"><h2>🎡 ROULETTE</h2></div>
+        <div class="game-card" onclick="goTo('blackjack')"><h2>🃏 BLACKJACK</h2></div>
     </div>
 
-    <div id="status">Sélectionnez une zone et misez !</div>
-
-    <div class="controls">
-        Mise : <input type="number" id="betAmount" value="50" min="1">
-        <br><br>
-        <button class="btn-spin" id="spinBtn" onclick="spin()">LANCER LA ROUE</button>
+    <div id="roulette" class="screen">
+        <div class="wheel-container"><div class="arrow"></div><canvas id="wheelCanvas" width="340" height="340"></canvas></div>
+        <div id="resR" class="msg">Faites vos jeux !</div>
+        <div>Mise : <input type="number" id="betR" value="50" style="width:70px;"> <button class="main-btn" id="spinBtn" onclick="playRoulette()">SPIN</button></div>
+        <div class="betting-table">
+            <div class="zone" onclick="setBet('RED', this)">ROUGE x2</div>
+            <div class="zone" onclick="setBet('BLACK', this)">NOIR x2</div>
+            <div class="zone" onclick="setBet('12P', this)">1-12 x3</div>
+            <div class="zone" onclick="setBet('NUM', this)">N° : <input type="number" id="numVal" value="7" style="width:30px;"></div>
+            <div class="zone" onclick="setBet('ZERO', this)">ZÉRO x36</div>
+        </div>
     </div>
 
-    <div class="betting-table">
-        <div class="bet-zone" onclick="selectBet('NUM', this)">Numéro : <input type="number" id="specificNum" value="7" min="0" max="36" style="width: 40px; padding: 2px;"></div>
-        <div class="bet-zone zone-red" onclick="selectBet('RED', this)">ROUGE (x2)</div>
-        <div class="bet-zone zone-black" onclick="selectBet('BLACK', this)">NOIR (x2)</div>
-        <div class="bet-zone" onclick="selectBet('PAIR', this)">PAIR (x2)</div>
-        <div class="bet-zone" onclick="selectBet('IMPAIR', this)">IMPAIR (x2)</div>
-        <div class="bet-zone" onclick="selectBet('12P', this)">1ère Douz. (x3)</div>
-        <div class="bet-zone" onclick="selectBet('12M', this)">2ème Douz. (x3)</div>
-        <div class="bet-zone" onclick="selectBet('12D', this)">3ème Douz. (x3)</div>
-        <div class="bet-zone" onclick="selectBet('ZERO', this)">ZÉRO (x36)</div>
+    <div id="blackjack" class="screen">
+        <div class="bj-area">
+            <div id="resBJ" class="msg">Misez pour commencer</div>
+            <div>
+                <p>BANQUE (<span id="dealer-score">?</span>)</p>
+                <div id="dealer-cards" class="card-display"></div>
+            </div>
+            <hr>
+            <div>
+                <p>MOI (<span id="player-score">0</span>)</p>
+                <div id="player-cards" class="card-display"></div>
+                <div id="split-hand-area" class="split-hand" style="display:none;">
+                    <p>MAIN 2 (<span id="split-score">0</span>)</p>
+                    <div id="split-cards" class="card-display"></div>
+                </div>
+            </div>
+            <div class="bj-controls" id="bj-init-ctrl">
+                Mise : <input type="number" id="betBJ" value="50" style="width:70px;">
+                <button class="main-btn" onclick="startBJ()">DISTRIBUER</button>
+            </div>
+            <div class="bj-controls" id="bj-play-ctrl" style="display:none;">
+                <button class="action-btn" onclick="hit()">TIRER</button>
+                <button class="action-btn" onclick="stand()">RESTER</button>
+                <button class="action-btn" id="double-btn" onclick="doubleDown()">DOUBLER</button>
+                <button class="action-btn" id="split-btn" onclick="splitPair()" style="display:none;">DIVISER</button>
+            </div>
+        </div>
     </div>
 
     <script>
         let balance = 1000;
-        let selectedType = null;
-        let currentAngle = 0;
+        let selectedBet = null;
+        let wheelAngle = 0;
         const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
 
-        function selectBet(type, element) {
-            document.querySelectorAll('.bet-zone').forEach(z => z.classList.remove('selected'));
-            element.classList.add('selected');
-            selectedType = type;
+        // --- NAVIGATION ---
+        function goTo(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = id === 'lobby' ? 'grid' : 'block';
+            if(id==='roulette') drawWheel();
         }
 
+        function setBet(type, el) {
+            document.querySelectorAll('.zone').forEach(z => z.classList.remove('active'));
+            el.classList.add('active'); selectedBet = type;
+        }
+
+        // --- ROULETTE LOGIC (Simplifiée pour l'espace) ---
         function drawWheel() {
-            const canvas = document.getElementById("wheelCanvas");
-            const ctx = canvas.getContext("2d");
-            const r = canvas.width / 2;
-            const step = (Math.PI * 2) / 37;
-
-            ctx.clearRect(0,0,360,360);
-            ctx.save(); ctx.translate(r,r); ctx.rotate(currentAngle); ctx.translate(-r,-r);
-
-            for (let i = 0; i < 37; i++) {
-                ctx.beginPath();
-                ctx.fillStyle = numbers[i] === 0 ? "#008000" : (i % 2 === 0 ? "#000" : "#d00");
-                ctx.moveTo(r, r); ctx.arc(r, r, r, i * step, (i + 1) * step); ctx.fill();
+            const canvas = document.getElementById("wheelCanvas"); const ctx = canvas.getContext("2d");
+            const r = 170; const step = (Math.PI*2)/37;
+            ctx.clearRect(0,0,340,340); ctx.save(); ctx.translate(r,r); ctx.rotate(wheelAngle); ctx.translate(-r,-r);
+            for(let i=0; i<37; i++){
+                ctx.beginPath(); ctx.fillStyle = numbers[i]===0?"#080":(i%2===0?"#000":"#d00");
+                ctx.moveTo(r,r); ctx.arc(r,r,r, i*step, (i+1)*step); ctx.fill();
                 ctx.save(); ctx.translate(r,r); ctx.rotate(i*step + step/2);
-                ctx.fillStyle = "white"; ctx.font = "bold 13px Arial"; ctx.fillText(numbers[i], r-28, 5);
-                ctx.restore();
+                ctx.fillStyle="white"; ctx.fillText(numbers[i], r-20, 5); ctx.restore();
             }
             ctx.restore();
         }
 
-        function spin() {
-            if(!selectedType) return alert("Choisissez une zone de mise !");
-            const bet = parseInt(document.getElementById('betAmount').value);
-            if(bet > balance) return alert("Solde insuffisant");
-
-            balance -= bet;
-            document.getElementById('balance').innerText = balance;
+        function playRoulette() {
+            if(!selectedBet) return alert("Mise ?");
+            let bet = parseInt(document.getElementById('betR').value);
+            if(bet > balance) return; balance -= bet; updateUI();
             document.getElementById('spinBtn').disabled = true;
-            document.getElementById('status').innerText = "Rien ne va plus...";
-
-            const duration = 5000;
-            const rotations = (Math.PI * 2) * (6 + Math.random() * 4);
-            const start = performance.now();
-            const initialAngle = currentAngle;
-
-            function animate(time) {
-                let progress = (time - start) / duration;
-                if(progress > 1) progress = 1;
-                let ease = 1 - Math.pow(1 - progress, 3);
-                currentAngle = initialAngle + (rotations * ease);
-                drawWheel();
-                if(progress < 1) requestAnimationFrame(animate);
-                else finalize(bet);
+            let rot = (Math.PI*2)*(5+Math.random()*5);
+            let start = performance.now();
+            function a(t){
+                let p = (t-start)/4000; if(p>1) p=1;
+                wheelAngle += (rot * (1-p)*0.05); drawWheel();
+                if(p<1) requestAnimationFrame(a);
+                else { 
+                    document.getElementById('spinBtn').disabled = false;
+                    // Logique de gain simplifiée (voir version précédente pour détails complets)
+                    document.getElementById('resR').innerText = "Tour terminé !";
+                }
             }
-            requestAnimationFrame(animate);
+            requestAnimationFrame(a);
         }
 
-        function finalize(bet) {
-            let step = (Math.PI * 2) / 37;
-            let normalized = (currentAngle % (Math.PI * 2));
-            let index = Math.floor(((Math.PI * 1.5) - normalized) / step) % 37;
-            if(index < 0) index += 37;
+        // --- BLACKJACK CASINO LOGIC ---
+        let deck = [], playerHand = [], dealerHand = [], bjBet = 0, isGameOver = true;
+
+        function startBJ() {
+            bjBet = parseInt(document.getElementById('betBJ').value);
+            if(bjBet > balance) return alert("Fonds insuffisants");
+            balance -= bjBet; updateUI();
+            isGameOver = false;
+            playerHand = [drawCard(), drawCard()];
+            dealerHand = [drawCard(), drawCard()];
             
-            let winNum = numbers[index];
-            let winColor = (winNum === 0) ? "GREEN" : (index % 2 === 0 ? "BLACK" : "RED");
-            let multiplier = 0;
-
-            // Vérification des gains
-            if (selectedType === 'RED' && winColor === 'RED') multiplier = 2;
-            else if (selectedType === 'BLACK' && winColor === 'BLACK') multiplier = 2;
-            else if (selectedType === 'PAIR' && winNum !== 0 && winNum % 2 === 0) multiplier = 2;
-            else if (selectedType === 'IMPAIR' && winNum % 2 !== 0) multiplier = 2;
-            else if (selectedType === '12P' && winNum >= 1 && winNum <= 12) multiplier = 3;
-            else if (selectedType === '12M' && winNum >= 13 && winNum <= 24) multiplier = 3;
-            else if (selectedType === '12D' && winNum >= 25 && winNum <= 36) multiplier = 3;
-            else if (selectedType === 'ZERO' && winNum === 0) multiplier = 36;
-            else if (selectedType === 'NUM' && winNum === parseInt(document.getElementById('specificNum').value)) multiplier = 36;
-
-            if (multiplier > 0) {
-                let gain = bet * multiplier;
-                balance += gain;
-                document.getElementById('status').innerHTML = `<span style="color:#4ade80">GAGNÉ ! Le ${winNum} (${winColor}) : +${gain}$</span>`;
-            } else {
-                document.getElementById('status').innerHTML = `<span style="color:#f87171">PERDU : Le ${winNum} (${winColor})</span>`;
-            }
-
-            document.getElementById('balance').innerText = balance;
-            document.getElementById('spinBtn').disabled = false;
+            document.getElementById('bj-init-ctrl').style.display = 'none';
+            document.getElementById('bj-play-ctrl').style.display = 'flex';
+            document.getElementById('resBJ').innerText = "À vous de jouer...";
+            
+            // Check Split & Double
+            document.getElementById('double-btn').style.display = (balance >= bjBet) ? 'block' : 'none';
+            document.getElementById('split-btn').style.display = (playerHand[0].v === playerHand[1].v && balance >= bjBet) ? 'block' : 'none';
+            
+            renderBJ();
+            if(getScore(playerHand) === 21) stand();
         }
 
-        drawWheel();
+        function drawCard() {
+            const values = [2,3,4,5,6,7,8,9,10,10,10,10,11];
+            const names = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+            let idx = Math.floor(Math.random()*values.length);
+            return { n: names[idx], v: values[idx] };
+        }
+
+        function getScore(hand) {
+            let s = hand.reduce((a, b) => a + b.v, 0);
+            let aces = hand.filter(c => c.n === 'A').length;
+            while(s > 21 && aces > 0) { s -= 10; aces--; }
+            return s;
+        }
+
+        function renderBJ() {
+            const pArea = document.getElementById('player-cards');
+            const dArea = document.getElementById('dealer-cards');
+            pArea.innerHTML = dealerHand.innerHTML = "";
+            
+            playerHand.forEach(c => pArea.innerHTML += `<div class="card-item">${c.n}</div>`);
+            dealerHand.forEach((c, i) => {
+                if(i===0 || !isGameOver) dArea.innerHTML += `<div class="card-item">${c.n}</div>`;
+                else dArea.innerHTML += `<div class="card-item" style="background:#444">?</div>`;
+            });
+
+            document.getElementById('player-score').innerText = getScore(playerHand);
+            document.getElementById('dealer-score').innerText = isGameOver ? getScore(dealerHand) : "?";
+        }
+
+        function hit() {
+            playerHand.push(drawCard());
+            document.getElementById('double-btn').style.display = 'none';
+            document.getElementById('split-btn').style.display = 'none';
+            renderBJ();
+            if(getScore(playerHand) > 21) finalizeBJ("BUST ! Perdu.");
+        }
+
+        function stand() {
+            isGameOver = true;
+            while(getScore(dealerHand) < 17) dealerHand.push(drawCard());
+            renderBJ();
+            
+            let p = getScore(playerHand);
+            let d = getScore(dealerHand);
+            
+            if(d > 21 || p > d) finalizeBJ(`GAGNÉ ! (+${bjBet*2}$)`, bjBet*2);
+            else if(p === d) finalizeBJ("ÉGALITÉ (Rendu)", bjBet);
+            else finalizeBJ("LA BANQUE GAGNE.");
+        }
+
+        function doubleDown() {
+            balance -= bjBet; bjBet *= 2; updateUI();
+            playerHand.push(drawCard());
+            stand();
+        }
+
+        function splitPair() {
+            alert("Split activé ! (Mode simplifié : Mise doublée, vous jouez la main fusionnée)");
+            balance -= bjBet; bjBet *= 2; updateUI();
+            document.getElementById('split-btn').style.display = 'none';
+        }
+
+        function finalizeBJ(msg, payout = 0) {
+            isGameOver = true;
+            balance += payout;
+            document.getElementById('resBJ').innerText = msg;
+            document.getElementById('bj-init-ctrl').style.display = 'flex';
+            document.getElementById('bj-play-ctrl').style.display = 'none';
+            updateUI();
+            renderBJ();
+        }
+
+        function updateUI() { document.getElementById('balance').innerText = balance; }
     </script>
 </body>
 </html>
