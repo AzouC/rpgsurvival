@@ -3,200 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamble Pro - Web Edition</title>
-    
+    <title>Gamble Elite - Roulette Animée</title>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        /* Style de la Roue */
+        .roulette-container { position: relative; width: 200px; height: 200px; margin: 20px auto; }
+        #wheel { 
+            width: 100%; height: 100%; border-radius: 50%; border: 8px solid #fbbf24;
+            background: conic-gradient(#ef4444 0% 48%, #10b981 48% 52%, #1e293b 52% 100%);
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem;
+        }
+        .pointer { 
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+            border-top: 25px solid #fbbf24; z-index: 10;
         }
 
-        h1 {
-            color: #fbbf24;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .card { 
+            background: #064e3b; border-radius: 20px; padding: 25px; width: 350px; 
+            text-align: center; border: 2px solid #fbbf24; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .stats-bar {
-            background: #1e293b;
-            padding: 15px 30px;
-            border-radius: 50px;
-            border: 2px solid #fbbf24;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        .input-group { margin: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        input { background: #022c22; border: 1px solid #fbbf24; color: white; padding: 8px; border-radius: 5px; width: 70px; text-align: center; }
+        
+        .btn { 
+            background: #fbbf24; color: #000; border: none; padding: 15px; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; 
         }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-            max-width: 1000px;
-        }
-
-        .card {
-            background: #064e3b; /* Vert tapis de casino */
-            border-radius: 20px;
-            padding: 25px;
-            width: 320px;
-            text-align: center;
-            border: 1px solid #059669;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card h2 {
-            margin-top: 0;
-            color: #fbbf24;
-            border-bottom: 1px solid #059669;
-            padding-bottom: 10px;
-        }
-
-        .controls {
-            margin: 20px 0;
-        }
-
-        input[type="number"] {
-            background: #022c22;
-            border: 1px solid #fbbf24;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            width: 80px;
-            font-size: 1rem;
-            text-align: center;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #fbbf24, #d97706);
-            color: #000;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            width: 100%;
-            margin-top: 10px;
-            box-shadow: 0 4px 0 #92400e;
-        }
-
-        .btn:active {
-            box-shadow: 0 0 0;
-            transform: translateY(4px);
-        }
-
-        .result {
-            margin-top: 20px;
-            font-size: 1.1rem;
-            min-height: 50px;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
-
-        .win { color: #4ade80; font-weight: bold; }
-        .lose { color: #f87171; font-weight: bold; }
+        .btn:disabled { background: #71717a; cursor: not-allowed; }
+        
+        .result { margin-top: 20px; font-size: 1.2rem; min-height: 60px; }
+        .win { color: #4ade80; animation: flash 0.5s infinite; }
+        .lose { color: #f87171; }
+        @keyframes flash { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <h1>🎰 GAMBLE PALACE</h1>
-    
-    <div class="stats-bar">
-        SOLDE : <span id="balance">1000</span> $
-    </div>
-
-    <div class="container">
-        <div class="card">
-            <h2>🔴 ROULETTE</h2>
-            <div class="controls">
-                Mise : <input type="number" id="betRoulette" value="10" min="1">
-            </div>
-            <button class="btn" onclick="playRoulette()">Tourner</button>
-            <div id="resRoulette" class="result">Prêt ?</div>
+    <div class="card">
+        <h2>🎰 ROULETTE PRO</h2>
+        
+        <div class="roulette-container">
+            <div class="pointer"></div>
+            <div id="wheel">?</div>
         </div>
 
-        <div class="card">
-            <h2>🃏 BLACKJACK</h2>
-            <div class="controls">
-                Mise : <input type="number" id="betBJ" value="20" min="1">
-            </div>
-            <button class="btn" onclick="playBJ()">Défier la banque</button>
-            <div id="resBJ" class="result">La banque vous attend...</div>
+        <div style="font-weight: bold; margin-bottom: 15px;">Solde : <span id="balance">1000</span> $</div>
+
+        <div class="input-group">
+            <label>Votre Numéro (0-36) :</label>
+            <input type="number" id="chosenNum" value="7" min="0" max="36">
         </div>
+
+        <div class="input-group">
+            <label>Mise ($) :</label>
+            <input type="number" id="betAmount" value="10" min="1">
+        </div>
+
+        <button class="btn" id="spinBtn" onclick="spin()">LANCER LA ROUE</button>
+
+        <div id="status" class="result">Choisissez un numéro et pariez !</div>
     </div>
 
     <script>
         let balance = 1000;
+        let currentRotation = 0;
 
-        function updateDisplay() {
+        function spin() {
+            const bet = parseInt(document.getElementById('betAmount').value);
+            const chosen = parseInt(document.getElementById('chosenNum').value);
+            const wheel = document.getElementById('wheel');
+            const btn = document.getElementById('spinBtn');
+            const status = document.getElementById('status');
+
+            if (bet > balance) return alert("Fonds insuffisants !");
+            if (isNaN(chosen) || chosen < 0 || chosen > 36) return alert("Numéro invalide (0-36)");
+
+            // Verrouiller
+            balance -= bet;
             document.getElementById('balance').innerText = balance;
-        }
+            btn.disabled = true;
+            status.innerText = "La roue tourne...";
+            wheel.innerText = "";
 
-        function playRoulette() {
-            let bet = parseInt(document.getElementById('betRoulette').value);
-            if (bet > balance) return alert("Pas assez de fonds !");
-            
-            balance -= bet;
-            updateDisplay();
+            // Animation
+            const extraDegrees = Math.floor(Math.random() * 360) + 1440; // 4 tours min
+            currentRotation += extraDegrees;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            let num = Math.floor(Math.random() * 37);
-            let color = (num === 0) ? "VERT" : (num % 2 === 0) ? "NOIR" : "ROUGE";
-            
-            // Gain simple : si on tombe sur un rouge (imaginons qu'on mise sur rouge par défaut pour le test)
-            let win = (num !== 0 && num % 2 !== 0); 
-            let msg = `Numéro : ${num} (${color})<br>`;
-            
-            if(win) {
-                balance += bet * 2;
-                msg += `<span class="win">GAGNÉ ! +${bet * 2}$</span>`;
-            } else {
-                msg += `<span class="lose">PERDU...</span>`;
-            }
-            
-            document.getElementById('resRoulette').innerHTML = msg;
-            updateDisplay();
-        }
+            setTimeout(() => {
+                const winningNum = Math.floor(Math.random() * 37);
+                wheel.innerText = winningNum;
+                wheel.style.transform = `rotate(${currentRotation}deg)`; // Fixer la position
+                
+                let win = (winningNum === chosen);
+                
+                if (win) {
+                    const gain = bet * 36;
+                    balance += gain;
+                    status.innerHTML = `<span class="win">JACKPOT !<br>Le ${winningNum} est sorti. +${gain}$</span>`;
+                } else {
+                    const color = (winningNum === 0) ? "VERT" : (winningNum % 2 === 0) ? "NOIR" : "ROUGE";
+                    status.innerHTML = `<span class="lose">PERDU...<br>C'était le ${winningNum} (${color})</span>`;
+                }
 
-        function playBJ() {
-            let bet = parseInt(document.getElementById('betBJ').value);
-            if (bet > balance) return alert("Pas assez de fonds !");
-            
-            balance -= bet;
-            updateDisplay();
-
-            let player = Math.floor(Math.random() * 10) + 12;
-            let dealer = Math.floor(Math.random() * 10) + 12;
-
-            let msg = `Joueur : ${player} | Banque : ${dealer}<br>`;
-
-            if (player > dealer) {
-                balance += bet * 2;
-                msg += `<span class="win">VICTOIRE ! +${bet * 2}$</span>`;
-            } else if (player < dealer) {
-                msg += `<span class="lose">DÉFAITE...</span>`;
-            } else {
-                balance += bet;
-                msg += `ÉGALITÉ (Rendu)`;
-            }
-
-            document.getElementById('resBJ').innerHTML = msg;
-            updateDisplay();
+                document.getElementById('balance').innerText = balance;
+                btn.disabled = false;
+            }, 4000);
         }
     </script>
 </body>
