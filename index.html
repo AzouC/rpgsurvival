@@ -8,26 +8,22 @@
         :root { --gold: #D4AF37; --green: #064E3B; --red: #d00; --black: #111; --bg: #0f172a; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
         
-        /* Navbar */
         .navbar { background: #1e293b; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 100; }
         .balance { font-size: 1.5rem; color: var(--gold); font-weight: bold; }
         .nav-btn { background: var(--gold); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* Screens */
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s; }
         #lobby { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 40px; max-width: 1000px; margin: 0 auto; }
         .game-card { background: #1e1e1e; border: 2px solid #333; border-radius: 15px; padding: 20px; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--gold); transform: translateY(-5px); }
         .game-card h2 { color: var(--gold); }
 
-        /* UI GENERALE */
         .btn { background: var(--gold); border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; box-shadow: 0 3px 0 #92400e; }
         .btn:active { transform: translateY(3px); box-shadow: none; }
         .btn:disabled { background: #555; box-shadow: none; opacity: 0.6; cursor: not-allowed; transform: none; }
         input { background: #000; color: white; border: 1px solid var(--gold); padding: 8px; border-radius: 5px; width: 70px; text-align: center; font-size: 1rem; }
         .status { font-size: 1.4rem; height: 40px; color: var(--gold); margin: 15px; font-weight: bold; }
 
-        /* ROULETTE STYLES */
         .wheel-box { position: relative; display: inline-block; margin-bottom: 10px; }
         .arrow { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
         canvas { border-radius: 50%; border: 6px solid #333; max-width: 320px; }
@@ -35,28 +31,24 @@
         .zone { background: rgba(0,0,0,0.5); padding: 12px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; border: 1px solid transparent; }
         .zone.active { border-color: white; background: var(--gold); color: black; }
 
-        /* BLACKJACK STYLES */
         .table { background: var(--green); border-radius: 100px 100px 20px 20px; padding: 30px 20px; border: 8px solid #3e2723; max-width: 550px; margin: 0 auto; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .hand { display: flex; justify-content: center; gap: 10px; min-height: 100px; margin: 10px 0; }
         .card { background: white; color: black; width: 55px; height: 85px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; border: 1px solid #999; box-shadow: 2px 2px 5px rgba(0,0,0,0.4); }
         .card.back { background: linear-gradient(45deg, #d00, #900); color: transparent; border: 2px solid white; }
         .score-box { font-size: 1rem; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold); }
 
-        /* MINES STYLES */
         .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 350px; margin: 20px auto; }
         .mine-tile { width: 60px; height: 60px; background: #1e293b; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; border-bottom: 4px solid #0f172a; }
         .mine-tile.revealed { background: #0f172a; border-bottom: none; }
         .mine-tile.gem { color: #4ade80; background: #064e3b; border: 1px solid #4ade80; }
         .mine-tile.bomb { color: #f87171; background: #450a0a; border: 1px solid #f87171; }
 
-        /* SLOTS STYLES */
         .slot-machine { background: linear-gradient(to bottom, #333, #111); padding: 30px; border-radius: 20px; border: 4px solid var(--gold); display: inline-block; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
         .reels-container { display: flex; gap: 15px; background: #000; padding: 15px; border-radius: 10px; border: 2px solid #555; box-shadow: inset 0 0 20px black; }
         .reel { width: 80px; height: 100px; background: white; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); position: relative; }
         .reel.spinning { filter: blur(2px); }
         .payout-table { margin-top: 20px; font-size: 0.9rem; color: #aaa; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: inline-block; max-width: 600px; }
 
-        /* ECRAN SUS (TRICHE) */
         #cheat-overlay {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -69,13 +61,12 @@
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-
     </style>
 </head>
 <body>
 
     <div id="cheat-overlay">
-        <img id="sus-img" src="sus.png" style="max-width: 80%; max-height: 70vh;" onerror="this.style.display='none'; document.getElementById('cheat-msg').style.display='block';">
+        <img id="sus-img" src="sus.jpeg" style="max-width: 80%; max-height: 70vh;" onerror="this.style.display='none'; document.getElementById('cheat-msg').style.display='block';">
         <div id="cheat-msg">Bha alors louloute ?<br>Tu essaie de tricher :O ?</div>
     </div>
 
@@ -161,7 +152,6 @@
 
     <script>
     (function() {
-        // --- SYSTÈME DE SAUVEGARDE (OBFUSQUÉ) ---
         const SAVE_KEY = 'ge_data_x9';
         
         function loadBalance() {
@@ -176,10 +166,8 @@
             localStorage.setItem(SAVE_KEY, btoa(amount.toString()));
         }
 
-        // --- VARIABLE PRIVÉE ---
         let _secureBalance = loadBalance();
         
-        // --- LE PIÈGE (HONEYPOT) ---
         Object.defineProperty(window, 'balance', {
             get: function() { return _secureBalance; },
             set: function(val) {
@@ -199,7 +187,6 @@
             }
         }
 
-        // --- CODE DU JEU ---
         const secureRandom = Math.random;
         const numbers = Object.freeze([0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]);
         const slotSymbols = Object.freeze(['🍒', '🍋', '🍇', '💎', '7️⃣']);
@@ -218,7 +205,6 @@
             if(id === 'roulette') drawWheel();
         };
 
-        // --- ROULETTE ---
         let selectedBet = null, wheelAngle = 0;
         window.setBet = function(type, el) {
             document.querySelectorAll('.zone').forEach(z => z.classList.remove('active'));
@@ -284,7 +270,6 @@
             document.getElementById('spinBtn').disabled = false; updateUI();
         }
 
-        // --- BLACKJACK VRAI DECK ---
         let pH = [], dH = [], bjBet = 0, over = true;
         let deck = [];
 
@@ -359,7 +344,6 @@
             _secureBalance -= bjBet; bjBet *= 2; updateUI(); pH.push(drawCard()); window.stand();
         };
 
-        // --- MINES LOGIC ---
         let minesPos = [], minesActive = false, minesBet = 0, minesRevealed = 0, currentMult = 1;
         window.startMines = function() {
             if(minesActive) return;
@@ -413,7 +397,6 @@
             document.getElementById('cashoutBtn').disabled = true;
         };
 
-        // --- SLOTS LOGIC ---
         window.spinSlots = function() {
             let bet = parseInt(document.getElementById('betSlots').value);
             if(isNaN(bet) || bet <= 0) return alert("Mise invalide");
